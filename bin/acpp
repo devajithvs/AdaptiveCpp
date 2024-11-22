@@ -348,7 +348,7 @@ class acpp_config:
   but does not actually execute it. """),
       'is-dryrun-noplugin': option("--acpp-dryrun-noplugin", "ACPP_DRYRUN_NOPLUGIN", "default-is-dryrun-noplugin",
 """  If set, only shows compilation commands that would be executed, 
-  but does not actually execute it. This version also remove -fplugin flags."""),
+  but does not actually execute it. This version also remove -fplugin related flags."""),
       'is-explicit-multipass': option("--acpp-explicit-multipass", "ACPP_EXPLICIT_MULTIPASS",
       "default-is-explicit-multipass",
 """  If set, executes device passes as separate compiler invocation and lets AdaptiveCpp control embedding device
