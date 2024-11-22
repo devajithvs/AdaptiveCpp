@@ -346,6 +346,9 @@ class acpp_config:
       'is-dryrun': option("--acpp-dryrun", "ACPP_DRYRUN", "default-is-dryrun",
 """  If set, only shows compilation commands that would be executed,
   but does not actually execute it. """),
+      'is-dryrun-noplugin': option("--acpp-dryrun-noplugin", "ACPP_DRYRUN_NOPLUGIN", "default-is-dryrun-noplugin",
+"""  If set, only shows compilation commands that would be executed, 
+  but does not actually execute it. This version also remove -fplugin flags."""),
       'is-explicit-multipass': option("--acpp-explicit-multipass", "ACPP_EXPLICIT_MULTIPASS",
       "default-is-explicit-multipass",
 """  If set, executes device passes as separate compiler invocation and lets AdaptiveCpp control embedding device
@@ -800,6 +803,13 @@ class acpp_config:
       return False
 
   @property
+  def is_dryrun_noplugin(self):
+    try:
+      return self._is_flag_set("is-dryrun-noplugin")
+    except OptionNotSet:
+      return False
+      
+  @property
   def use_accelerated_cpu(self):
     try:
       return self._is_flag_set("use-accelerated-cpu")
@@ -923,7 +933,15 @@ class acpp_config:
   def is_pure_linking_stage(self):
     return len(self.source_file_arguments) == 0
 
-def run_or_print(command, print_only):
+def run_or_print(command, print_only, noplugin=False):
+
+  if(noplugin):
+    new_cmd = []
+    for arg in command:
+      if not (arg.startswith("-fplugin=") or arg.startswith("-fpass-plugin")):
+        new_cmd.append(arg)
+    command = new_cmd
+
   if not print_only:
     return subprocess.call(command)
   else:
@@ -1560,7 +1578,8 @@ class compiler:
     self._user_args = config.forwarded_compiler_arguments
     self._requires_linking = config.contains_linking_stage()
     self._requires_compilation = not config.is_pure_linking_stage()
-    self._is_dry_run = config.is_dryrun
+    self._is_dry_run = config.is_dryrun or config.is_dryrun_noplugin
+    self._no_plugins = config.is_dryrun_noplugin
     self._targets = config.targets
     self._common_compiler_args = config.common_compiler_args
     self._acpp_path = config.acpp_installation_path
@@ -1894,7 +1913,7 @@ class compiler:
       args += ld_flags
 
     return run_or_print([compiler_executable] + args,
-                        self._is_dry_run)
+                        self._is_dry_run, self._no_plugins)
 
   def run(self):
     temp_prefix = "adaptivecpp-"
