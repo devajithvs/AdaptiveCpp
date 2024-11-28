@@ -933,18 +933,51 @@ class acpp_config:
   def is_pure_linking_stage(self):
     return len(self.source_file_arguments) == 0
 
-def run_or_print(command, print_only, noplugin=False):
+def filter_cmd_args(command, verbose = False):
+  new_cmd = []
 
-  if(noplugin):
-    new_cmd = []
-    for arg in command:
-      if not (arg.startswith("-fplugin=") or arg.startswith("-fpass-plugin")):
+  whitelist = [
+    "-I", "-D", "-W", "-std=","-pedantic-errors"
+  ]
+
+  whitelist_enable_next = [
+    "-isystem", "-o", "-c"
+  ]
+
+  add_next_arg = True # to add clang call
+  for arg in command: 
+    if add_next_arg:
+      new_cmd.append(arg)
+      add_next_arg = False
+      continue
+    
+    for w in whitelist:
+      if arg.startswith(w):
         new_cmd.append(arg)
-    command = new_cmd
+        add_next_arg = False
+        continue
+
+    for w in whitelist_enable_next:
+      if arg.startswith(w):
+        new_cmd.append(arg)
+        add_next_arg = True
+        continue
+
+  if verbose:
+    for arg in command:
+      if not arg in new_cmd:
+        print("removed :",arg)
+
+  return new_cmd
+
+
+def run_or_print(command, print_only, noplugin=False):
 
   if not print_only:
     return subprocess.call(command)
   else:
+    if(noplugin):
+      command = filter_cmd_args(command,verbose=True)
     print(' '.join(command))
     return 0
 
