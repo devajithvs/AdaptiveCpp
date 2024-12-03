@@ -227,22 +227,35 @@ bool LLVMToPtxTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
 
 bool LLVMToPtxTranslator::translateToBackendFormat(llvm::Module &FlavoredModule, std::string &out) {
 
-  auto InputFile = llvm::sys::fs::TempFile::create("acpp-sscp-ptx-%%%%%%.bc");
-  auto OutputFile = llvm::sys::fs::TempFile::create("acpp-sscp-ptx-%%%%%%.s");
-  
-  std::string OutputFilename = OutputFile->TmpName;
-  
-  auto E = InputFile.takeError();
-  if(E){
-    this->registerError("LLVMToPtx: Could not create temp file: "+InputFile->TmpName);
+  auto InputFileOrErr = llvm::sys::fs::TempFile::create("acpp-sscp-ptx-%%%%%%.bc");
+  if (!InputFileOrErr) {
+    this->registerError("LLVMToPtx: Could not create temp input file: " +
+                        llvm::toString(InputFileOrErr.takeError()));
     return false;
   }
+  auto InputFile = std::move(*InputFileOrErr);
 
-  AtScopeExit DestroyInputFile([&]() { auto Err = InputFile->discard(); });
-  AtScopeExit DestroyOutputFile([&]() { auto Err = OutputFile->discard(); });
+  auto OutputFileOrErr = llvm::sys::fs::TempFile::create("acpp-sscp-ptx-%%%%%%.s");
+  if (!OutputFileOrErr) {
+    this->registerError("LLVMToPtx: Could not create temp output file: " +
+                        llvm::toString(OutputFileOrErr.takeError()));
+    return false;
+  }
+  auto OutputFile = std::move(*OutputFileOrErr);
+
+  AtScopeExit DestroyInputFile([&]() {
+    if (auto Err = InputFile.discard())
+        this->registerError("LLVMToPtx: Failed to discard input file: " +
+                            llvm::toString(std::move(Err)));
+  });
+  AtScopeExit DestroyOutputFile([&]() {
+    if (auto Err = OutputFile.discard())
+        this->registerError("LLVMToPtx: Failed to discard output file: " +
+                            llvm::toString(std::move(Err)));
+  });
 
   std::error_code EC;
-  llvm::raw_fd_ostream InputStream{InputFile->FD, false};
+  llvm::raw_fd_ostream InputStream{InputFile.FD, false};
   
   llvm::WriteBitcodeToFile(FlavoredModule, InputStream);
   InputStream.flush();
@@ -264,33 +277,23 @@ bool LLVMToPtxTranslator::translateToBackendFormat(llvm::Module &FlavoredModule,
                                                     "-x",
                                                     "ir",
                                                     "-o",
-                                                    OutputFilename,
-                                                    InputFile->TmpName};
+                                                    OutputFile.TmpName,
+                                                    InputFile.TmpName};
   if(IsFastMath)
     Invocation.push_back("-ffast-math");
 
-  std::string ArgString;
-  for(const auto& S : Invocation) {
-    ArgString += S;
-    ArgString += " ";
+  int R = llvm::sys::ExecuteAndWait(ClangPath, Invocation);
+  if (R != 0) {
+      this->registerError("LLVMToPtx: clang invocation failed with exit code " +
+                          std::to_string(R));
+      return false;
   }
-  HIPSYCL_DEBUG_INFO << "LLVMToPtx: Invoking " << ArgString << "\n";
 
-  int R = llvm::sys::ExecuteAndWait(
-      ClangPath, Invocation);
-  
-  if(R != 0) {
-    this->registerError("LLVMToPtx: clang invocation failed with exit code " +
-                        std::to_string(R));
-    return false;
-  }
-  
-  auto ReadResult =
-      llvm::MemoryBuffer::getFile(OutputFile->TmpName, -1);
-  
-  if(auto Err = ReadResult.getError()) {
-    this->registerError("LLVMToPtx: Could not read result file"+Err.message());
-    return false;
+  auto ReadResult = llvm::MemoryBuffer::getFile(OutputFile.TmpName);
+  if (!ReadResult) {
+      this->registerError("LLVMToPtx: Could not read result file: " +
+                          ReadResult.getError().message());
+      return false;
   }
   
   out = ReadResult->get()->getBuffer();
