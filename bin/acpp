@@ -363,13 +363,7 @@ class acpp_config:
       'stdpar-unconditional-offload' : option("--acpp-stdpar-unconditional-offload", "ACPP_STDPAR_UNCONDITIONAL_OFFLOAD", "default-is-stdpar-unconditional-offload",
 """  Normally, heuristics are employed to determine whether algorithms should be offloaded.
   This particularly affects small problem sizes. If this flag is set, supported parallel STL
-  algorithms will be offloaded unconditionally."""),
-      'is-dryrun-cxxflags': option("--acpp-dryrun-cxxflags", "ACPP_DRYRUN_CXXFLAGS", "default-dryrun-cxxflags",
-"""  If set, prints only the CXXFLAGS used during compilation without executing the compiler."""),
-      'is-dryrun-ldflags': option("--acpp-dryrun-ldflags", "ACPP_DRYRUN_LDFLAGS", "default-dryrun-ldflags",
-"""  If set, prints only the LDFLAGS used during linking without executing the compiler."""),
-      'is-dryrun-mllvm': option("--acpp-dryrun-mllvm", "ACPP_DRYRUN_MLLVM", "default-dryrun-mllvm",
-"""  If set, prints only the -mllvm flags used during compilation without executing the compiler.""")
+  algorithms will be offloaded unconditionally.""")
     }
 
 
@@ -801,27 +795,6 @@ class acpp_config:
   def is_dryrun(self):
     try:
       return self._is_flag_set("is-dryrun")
-    except OptionNotSet:
-      return False
-
-  @property
-  def is_dryrun_mllvm(self):
-    try:
-      return self._is_flag_set("is-dryrun-mllvm")
-    except OptionNotSet:
-      return False
-
-  @property
-  def is_dryrun_cxxflags(self):
-    try:
-      return self._is_flag_set("is-dryrun-cxxflags")
-    except OptionNotSet:
-      return False
-
-  @property
-  def is_dryrun_ldflags(self):
-    try:
-      return self._is_flag_set("is-dryrun-ldflags")
     except OptionNotSet:
       return False
 
@@ -1577,9 +1550,6 @@ class compiler:
     self._requires_linking = config.contains_linking_stage()
     self._requires_compilation = not config.is_pure_linking_stage()
     self._is_dry_run = config.is_dryrun
-    self._is_dryrun_cxxflags = config.is_dryrun_cxxflags
-    self._is_dryrun_ldflags = config.is_dryrun_ldflags
-    self._is_dryrun_mllvm = config.is_dryrun_mllvm
     self._targets = config.targets
     self._common_compiler_args = config.common_compiler_args
     self._acpp_path = config.acpp_installation_path
@@ -1911,27 +1881,6 @@ class compiler:
 
     if self._requires_linking:
       args += ld_flags
-
-    if config.is_dryrun_mllvm:
-      llvm_flags = []
-      i = 0
-      while i < len(cxx_flags):
-        if cxx_flags[i] == "-mllvm":
-          # llvm_flags.append(cxx_flags[i])
-          if i + 1 < len(cxx_flags):  # Check for next argument
-            llvm_flags.append(cxx_flags[i + 1])
-          i += 1  # Skip the next argument
-        i += 1
-      print(" ".join(llvm_flags))
-      return 0
-
-    if config.is_dryrun_cxxflags:
-      print(" ".join(cxx_flags))
-      return 0
-
-    if config.is_dryrun_ldflags:
-      print(" ".join(ld_flags))
-      return 0
 
     return run_or_print([compiler_executable] + args,
                         self._is_dry_run)
