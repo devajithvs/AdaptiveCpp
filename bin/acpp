@@ -346,9 +346,9 @@ class acpp_config:
       'is-dryrun': option("--acpp-dryrun", "ACPP_DRYRUN", "default-is-dryrun",
 """  If set, only shows compilation commands that would be executed,
   but does not actually execute it. """),
-      'is-dryrun-noplugin': option("--acpp-dryrun-noplugin", "ACPP_DRYRUN_NOPLUGIN", "default-is-dryrun-noplugin",
+      'is-dryrun-only-std-flags': option("--acpp-dryrun-only-std-flags", "ACPP_DRYRUN_ONLYSTDFLAGS", "default-is-dryrun-only-std-flags",
 """  If set, only shows compilation commands that would be executed, 
-  but does not actually execute it. This version also remove -fplugin related flags."""),
+  but does not actually execute it. This version also remove all non standard flags."""),
       'is-explicit-multipass': option("--acpp-explicit-multipass", "ACPP_EXPLICIT_MULTIPASS",
       "default-is-explicit-multipass",
 """  If set, executes device passes as separate compiler invocation and lets AdaptiveCpp control embedding device
@@ -803,9 +803,9 @@ class acpp_config:
       return False
 
   @property
-  def is_dryrun_noplugin(self):
+  def is_dryrun_only_std_flags(self):
     try:
-      return self._is_flag_set("is-dryrun-noplugin")
+      return self._is_flag_set("is-dryrun-only-std-flags")
     except OptionNotSet:
       return False
       
@@ -940,8 +940,10 @@ def filter_cmd_args(command, verbose = False):
     "-I", "-D", "-W", "-std=","-pedantic-errors"
   ]
 
+  # you can cheat the handling of -I<include> & -I <include> by treating
+  # enable_next first with "-I " as matcher then the other with "-I" matcher
   whitelist_enable_next = [
-    "-isystem", "-o", "-c"
+    "-isystem", "-o", "-c", "-I "
   ]
 
   add_next_arg = True # to add clang call
@@ -951,16 +953,16 @@ def filter_cmd_args(command, verbose = False):
       add_next_arg = False
       continue
     
-    for w in whitelist:
-      if arg.startswith(w):
-        new_cmd.append(arg)
-        add_next_arg = False
-        continue
-
     for w in whitelist_enable_next:
       if arg.startswith(w):
         new_cmd.append(arg)
         add_next_arg = True
+        continue
+
+    for w in whitelist:
+      if arg.startswith(w):
+        new_cmd.append(arg)
+        add_next_arg = False
         continue
 
   if verbose:
@@ -971,12 +973,12 @@ def filter_cmd_args(command, verbose = False):
   return new_cmd
 
 
-def run_or_print(command, print_only, noplugin=False):
+def run_or_print(command, print_only, only_std_flags=False):
 
   if not print_only:
     return subprocess.call(command)
   else:
-    if(noplugin):
+    if(only_std_flags):
       command = filter_cmd_args(command,verbose=False)
     print(' '.join(command))
     return 0
@@ -1611,8 +1613,8 @@ class compiler:
     self._user_args = config.forwarded_compiler_arguments
     self._requires_linking = config.contains_linking_stage()
     self._requires_compilation = not config.is_pure_linking_stage()
-    self._is_dry_run = config.is_dryrun or config.is_dryrun_noplugin
-    self._no_plugins = config.is_dryrun_noplugin
+    self._is_dry_run = config.is_dryrun or config.is_dryrun_only_std_flags
+    self._only_std_flags = config.is_dryrun_only_std_flags
     self._targets = config.targets
     self._common_compiler_args = config.common_compiler_args
     self._acpp_path = config.acpp_installation_path
@@ -1946,7 +1948,7 @@ class compiler:
       args += ld_flags
 
     return run_or_print([compiler_executable] + args,
-                        self._is_dry_run, self._no_plugins)
+                        self._is_dry_run, self._only_std_flags)
 
   def run(self):
     temp_prefix = "adaptivecpp-"
