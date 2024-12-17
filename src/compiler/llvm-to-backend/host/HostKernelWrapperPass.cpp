@@ -63,7 +63,8 @@ void replaceUsesOfGVWith(llvm::Function &F, llvm::StringRef GlobalVarName, llvm:
  * This makes calling the kernel from the host code straighforward, as only the work group info
  * struct and the user arguments need to be passed to the wrapper.
  */
-llvm::Function *makeWrapperFunction(llvm::Function &F, std::int64_t DynamicLocalMemSize) {
+llvm::Function *makeWrapperFunction(llvm::Function &F, std::int64_t DynamicLocalMemSize,
+                                    const std::array<int, 3> &KnownWgSize) {
   auto M = F.getParent();
   auto &Ctx = M->getContext();
 
@@ -162,6 +163,13 @@ llvm::Function *makeWrapperFunction(llvm::Function &F, std::int64_t DynamicLocal
     replaceUsesOfGVWith(*Wrapper, cbs::GroupIdGlobalNames[I], GroupIds[I]);
     replaceUsesOfGVWith(*Wrapper, cbs::LocalSizeGlobalNames[I], LocalSize[I]);
   }
+
+  for (auto i = 0ul; i < 3ul; ++i) {
+    if (KnownWgSize.at(i) != 0)
+      utils::replaceUsesOfGVWith(F, cbs::LocalSizeGlobalNames.at(i),
+                                 llvm::ConstantInt::get(SizeT, KnownWgSize.at(i)), PassPrefix);
+  }
+
   replaceUsesOfGVWith(*Wrapper, cbs::SscpDynamicLocalMemoryPtrName, LocalMemPtr);
   replaceUsesOfGVWith(*Wrapper, cbs::SscpInternalLocalMemoryPtrName, InternalLocalMemPtr);
 
@@ -182,7 +190,7 @@ llvm::PreservedAnalyses HostKernelWrapperPass::run(llvm::Function &F,
   if (!SAA || !SAA->isKernelFunc(&F))
     return llvm::PreservedAnalyses::all();
 
-  auto Wrapper = makeWrapperFunction(F, DynamicLocalMemSize);
+  auto Wrapper = makeWrapperFunction(F, DynamicLocalMemSize, KnownWgSize);
 
   HIPSYCL_DEBUG_INFO << PassPrefix << "Created kernel wrapper: " << Wrapper->getName() << "\n";
 

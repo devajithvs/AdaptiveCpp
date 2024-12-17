@@ -9,7 +9,6 @@
  */
 // SPDX-License-Identifier: BSD-2-Clause
 #include "hipSYCL/compiler/llvm-to-backend/host/LLVMToHost.hpp"
-#include "hipSYCL/compiler/llvm-to-backend/host/HostKnownWgSizePass.hpp"
 
 #include "hipSYCL/common/debug.hpp"
 #include "hipSYCL/common/filesystem.hpp"
@@ -102,8 +101,7 @@ bool LLVMToHostTranslator::toBackendFlavor(llvm::Module &M, PassHandler &PH) {
   registerCBSPipeline(MPM, hipsycl::compiler::OptLevel::O3, true);
 
   llvm::FunctionPassManager FPM;
-  FPM.addPass(HostKnownWgSizePass{KnownGroupSizeX, KnownGroupSizeY, KnownGroupSizeZ});
-  FPM.addPass(HostKernelWrapperPass{KnownLocalMemSize});
+  FPM.addPass(HostKernelWrapperPass{KnownLocalMemSize, KnownGroupSizeX, KnownGroupSizeY, KnownGroupSizeZ});
   MPM.addPass(llvm::createModuleToFunctionPassAdaptor(std::move(FPM)));
 
   MPM.run(M, *PH.ModuleAnalysisManager);
