@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(load_store_exchange, Type,
 template <class T, class AtomicTester,
           class Verifier>
 void atomic_device_reduction_test(AtomicTester t, Verifier v,
-				  std::function<int(int)> init = [](int t) { return t; }) {
+				  std::function<int(int)> init = [](int t) { return -t; }) {
   
   sycl::queue q;
 
