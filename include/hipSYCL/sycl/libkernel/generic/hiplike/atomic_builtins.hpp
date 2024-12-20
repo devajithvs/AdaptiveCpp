@@ -510,7 +510,14 @@ __acpp_atomic_fetch_sub(unsigned long *addr, unsigned long x,
 template <access::address_space S, class T>
 HIPSYCL_HIPLIKE_BUILTIN T __acpp_atomic_fetch_min(
     T *addr, T x, memory_order order, memory_scope scope) noexcept {
+#if defined(__HIP__)
+  // HIP does not support some of the overloads of atomicMin until ROCm 5.7
+  // https://github.com/ROCm/clr/issues/2
+  return __hip_atomic_fetch_min(addr, x, builtin_memory_order(order),
+      __HIP_MEMORY_SCOPE_AGENT);
+#else
   return atomicMin(addr, x);
+#endif
 }
 
 // Need completion of integral overload set
@@ -549,7 +556,14 @@ __acpp_atomic_fetch_min(double *addr, double x, memory_order order,
 template <access::address_space S, class T>
 HIPSYCL_HIPLIKE_BUILTIN T __acpp_atomic_fetch_max(
     T *addr, T x, memory_order order, memory_scope scope) noexcept {
+#if defined(__HIP__)
+  // HIP does not support some of the overloads of atomicMax until ROCm 5.7
+  // https://github.com/ROCm/clr/issues/2
+  return __hip_atomic_fetch_max(addr, x, builtin_memory_order(order),
+      __HIP_MEMORY_SCOPE_AGENT);
+#else
   return atomicMax(addr, x);
+#endif
 }
 
 // Need completion of integral overload set
