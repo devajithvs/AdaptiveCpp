@@ -161,13 +161,12 @@ llvm::Function *makeWrapperFunction(llvm::Function &F, std::int64_t DynamicLocal
   for (int I = 0; I < 3; ++I) {
     replaceUsesOfGVWith(*Wrapper, cbs::NumGroupsGlobalNames[I], NumGroups[I]);
     replaceUsesOfGVWith(*Wrapper, cbs::GroupIdGlobalNames[I], GroupIds[I]);
-    replaceUsesOfGVWith(*Wrapper, cbs::LocalSizeGlobalNames[I], LocalSize[I]);
-  }
-
-  for (auto i = 0ul; i < 3ul; ++i) {
-    if (KnownWgSize.at(i) != 0)
-      utils::replaceUsesOfGVWith(F, cbs::LocalSizeGlobalNames.at(i),
-                                 llvm::ConstantInt::get(SizeT, KnownWgSize.at(i)), PassPrefix);
+    if (KnownWgSize[I] != 0) {
+      replaceUsesOfGVWith(*Wrapper, cbs::LocalSizeGlobalNames[I],
+                                 llvm::ConstantInt::get(SizeT, KnownWgSize[I]));
+    } else {
+      replaceUsesOfGVWith(*Wrapper, cbs::LocalSizeGlobalNames[I], LocalSize[I]);
+    }
   }
 
   replaceUsesOfGVWith(*Wrapper, cbs::SscpDynamicLocalMemoryPtrName, LocalMemPtr);
