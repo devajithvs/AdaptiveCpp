@@ -28,13 +28,14 @@ OutType sg_reduce_impl(OutType x, BinaryOperation binary_op, __acpp_int32 active
   const __acpp_uint64 subgroup_size = active_threads;
   auto local_x = x;
   for (__acpp_int32 i = lrange / 2; i > 0; i /= 2) {
-    auto other_x = bit_cast<OutType>(sg_select(
-        bit_cast<typename integer_type<OutType>::type>(local_x), lid + i));
+    auto other_x = __builtin_bit_cast(
+        OutType,
+        sg_select(__builtin_bit_cast(typename integer_type<OutType>::type, local_x), lid + i));
     if (lid + i < subgroup_size)
       local_x = binary_op(local_x, other_x);
   }
-  return bit_cast<OutType>(
-      sg_select(bit_cast<typename integer_type<OutType>::type>(local_x), 0));
+  return __builtin_bit_cast(
+      OutType, sg_select(__builtin_bit_cast(typename integer_type<OutType>::type, local_x), 0));
 }
 } // namespace
 
@@ -97,8 +98,9 @@ OutType wg_reduce(OutType x, BinaryOperation op, MemoryType *shrd_mem) {
   // Do a final broadcast
   using internal_type = typename integer_type<OutType>::type;
   static_assert(sizeof(internal_type) == sizeof(OutType));
-  local_reduce_result = bit_cast<OutType>(
-      wg_broadcast(0, bit_cast<internal_type>(local_reduce_result), &shrd_mem[0]));
+  local_reduce_result = __builtin_bit_cast(
+      OutType,
+      wg_broadcast(0, __builtin_bit_cast(internal_type, local_reduce_result), &shrd_mem[0]));
   return local_reduce_result;
 }
 

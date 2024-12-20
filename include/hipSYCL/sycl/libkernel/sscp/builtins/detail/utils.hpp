@@ -18,12 +18,6 @@
 
 namespace hipsycl::libkernel::sscp {
 
-template <class Tout, class Tin> Tout bit_cast(Tin x) {
-  Tout result;
-  result = __builtin_bit_cast(Tout, x);
-  return result;
-}
-
 struct plus {
   template <typename T> T operator()(T lhs, T rhs) { return lhs + rhs; }
 };

@@ -28,8 +28,8 @@ T sg_inclusive_scan(T x, BinaryOperation binary_op) {
   auto local_x = x;
   for (__acpp_int32 i = 1; i < lrange; i *= 2) {
     __acpp_uint32 next_id = lid - i;
-    auto other_x = bit_cast<T>(
-        sg_shift_right(bit_cast<typename integer_type<T>::type>(local_x), i));
+    auto other_x = __builtin_bit_cast(
+        T, sg_shift_right(__builtin_bit_cast(typename integer_type<T>::type, local_x), i));
     if (next_id >= 0 && i <= lid)
       local_x = binary_op(local_x, other_x);
   }
@@ -42,8 +42,8 @@ T sg_exclusive_scan(T x, BinaryOperation binary_op, T init) {
   const __acpp_uint64 subgroup_size = __acpp_sscp_get_subgroup_max_size();
   x = lid == 0 ? binary_op(x, init) : x;
   auto result_inclusive = sg_inclusive_scan(x, binary_op);
-  auto result = bit_cast<T>(sg_shift_right(
-      bit_cast<typename integer_type<T>::type>(result_inclusive), 1));
+  auto result = __builtin_bit_cast(
+      T, sg_shift_right(__builtin_bit_cast(typename integer_type<T>::type, result_inclusive), 1));
   result = lid % subgroup_size == 0 ? init : result;
   return result;
 }
