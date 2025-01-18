@@ -17,6 +17,7 @@
 #include "../detail/mem_fence.hpp"
 #include "../functional.hpp"
 #include "../group.hpp"
+#include "../group_traits.hpp"
 #include "../id.hpp"
 #include "../sub_group.hpp"
 #include "../vec.hpp"
@@ -69,6 +70,10 @@ __acpp_group_barrier(sub_group g,
 
 // broadcast
 
+// Separate all of the ID conversion shenaigans
+// from from all of the type-dispatching to
+// avoid unwanted recursion.
+namespace broadcast {
 template <int Dim, typename T>
 HIPSYCL_BUILTIN std::enable_if_t<sizeof(T) <= 8, T>
 __acpp_group_broadcast(group<Dim> g, T x, typename group<Dim>::linear_id_type local_linear_id = 0) {
@@ -120,16 +125,8 @@ __acpp_group_broadcast(sub_group g, T x, typename sub_group::linear_id_type loca
   }
 }
 
-template<typename T>
-HIPSYCL_BUILTIN
-T __acpp_group_broadcast(sub_group g, T x,
-                  typename sub_group::id_type local_id) {
-
-  return __acpp_group_broadcast(g, x, static_cast<int>(local_id[0]));
-}
-
-
-template<typename T, int N, class Group>
+template<typename T, int N, class Group,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
 std::enable_if_t<(sizeof(vec<T,N>) > 8), vec<T,N>>
 __acpp_group_broadcast(
@@ -142,7 +139,8 @@ __acpp_group_broadcast(
   return result;
 }
 
-template<class Group, typename T, int N>
+template<class Group, typename T, int N,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
 std::enable_if_t<(sizeof(marray<T,N>) > 8), marray<T,N>>
 __acpp_group_broadcast(
@@ -155,14 +153,33 @@ __acpp_group_broadcast(
   return result;
 }
 
+} // namespace broadcast
+
+template <typename Group, typename T,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
+HIPSYCL_BUILTIN T __acpp_group_broadcast(
+    Group g, T x, typename Group::linear_id_type local_linear_id = 0) {
+
+  return broadcast::__acpp_group_broadcast(g, x, local_linear_id);
+}
+
 template <int Dim, typename T>
 HIPSYCL_BUILTIN T __acpp_group_broadcast(
     group<Dim> g, T x, typename group<Dim>::id_type local_id) {
 
   const auto sender_lid = linear_id<g.dimensions>::get(
       local_id, g.get_local_range());
-  return __acpp_group_broadcast(g, x, static_cast<int>(sender_lid));
+  return __acpp_group_broadcast(g, x, static_cast<typename group<Dim>::linear_id_type>(sender_lid));
 }
+
+template<typename T>
+HIPSYCL_BUILTIN
+T __acpp_group_broadcast(sub_group g, T x,
+                  typename sub_group::id_type local_id) {
+
+  return __acpp_group_broadcast(g, x, static_cast<typename sub_group::linear_id_type>(local_id[0]));
+}
+
 
 // any_of
 
@@ -673,7 +690,8 @@ HIPSYCL_BUILTIN double __acpp_inclusive_scan_over_group(group<Dim> g, double x,
   return __acpp_sscp_work_group_inclusive_scan_f64(sscp_binary_operation_v<BinaryOperation>, x);
 }
 
-template <typename Group, typename T, int N, typename BinaryOperation>
+template <typename Group, typename T, int N, typename BinaryOperation,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN vec<T, N> __acpp_inclusive_scan_over_group(Group g, vec<T, N> x,
                                                            BinaryOperation binary_op) {
   vec<T, N> result;
@@ -684,7 +702,8 @@ HIPSYCL_BUILTIN vec<T, N> __acpp_inclusive_scan_over_group(Group g, vec<T, N> x,
   return result;
 }
 
-template <typename Group, typename T, int N, typename BinaryOperation>
+template <typename Group, typename T, int N, typename BinaryOperation,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN marray<T, N> __acpp_inclusive_scan_over_group(Group g, marray<T, N> x,
                                                               BinaryOperation binary_op) {
   marray<T, N> result;
@@ -695,7 +714,8 @@ HIPSYCL_BUILTIN marray<T, N> __acpp_inclusive_scan_over_group(Group g, marray<T,
   return result;
 }
 
-template <class Group, typename V, typename T, typename BinaryOperation>
+template <class Group, typename V, typename T, typename BinaryOperation,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN T __acpp_inclusive_scan_over_group(Group g, V x, T init,
                                                    BinaryOperation binary_op) {
   const size_t lid = g.get_local_linear_id();
@@ -911,7 +931,8 @@ HIPSYCL_BUILTIN double __acpp_exclusive_scan_over_group(group<Dim> g, double x,
                                                    identity);
 }
 
-template <typename T, int N, typename BinaryOperation, class Group>
+template <typename T, int N, typename BinaryOperation, class Group,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN vec<T, N> __acpp_exclusive_scan_over_group(Group g, vec<T, N> x,
                                                            BinaryOperation binary_op) {
   vec<T, N> result;
@@ -922,7 +943,8 @@ HIPSYCL_BUILTIN vec<T, N> __acpp_exclusive_scan_over_group(Group g, vec<T, N> x,
   return result;
 }
 
-template <typename T, int N, typename BinaryOperation, class Group>
+template <typename T, int N, typename BinaryOperation, class Group,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN marray<T, N> __acpp_exclusive_scan_over_group(Group g, marray<T, N> x,
                                                               BinaryOperation binary_op) {
   marray<T, N> result;
@@ -933,7 +955,8 @@ HIPSYCL_BUILTIN marray<T, N> __acpp_exclusive_scan_over_group(Group g, marray<T,
   return result;
 }
 
-template <class Group, typename V, typename T, typename BinaryOperation>
+template <class Group, typename V, typename T, typename BinaryOperation,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN T __acpp_exclusive_scan_over_group(Group g, V x, T init,
                                                    BinaryOperation binary_op) {
   const size_t lid = g.get_local_linear_id();
@@ -1026,7 +1049,8 @@ HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_shift_group_left(
   }
 }
 
-template <class Group, typename T, int N>
+template <class Group, typename T, int N,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
 std::enable_if_t<(sizeof(vec<T, N>) > 8), vec<T,N>>
 __acpp_shift_group_left(Group g, vec<T,N> x, typename Group::linear_id_type delta = 1) {
@@ -1038,7 +1062,8 @@ __acpp_shift_group_left(Group g, vec<T,N> x, typename Group::linear_id_type delt
   return result;
 }
 
-template <class Group, typename T, int N>
+template <class Group, typename T, int N,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
 std::enable_if_t<(sizeof(marray<T, N>) > 8), marray<T,N>>
 __acpp_shift_group_left(Group g, marray<T,N> x, typename Group::linear_id_type delta = 1) {
@@ -1088,7 +1113,8 @@ HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_shift_group_right(
 }
 
 
-template <class Group, typename T, int N>
+template <class Group, typename T, int N,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
 std::enable_if_t<(sizeof(vec<T, N>) > 8), vec<T,N>>
 __acpp_shift_group_right(Group g, vec<T,N> x, typename Group::linear_id_type delta = 1) {
@@ -1100,7 +1126,8 @@ __acpp_shift_group_right(Group g, vec<T,N> x, typename Group::linear_id_type del
   return result;
 }
 
-template <class Group, typename T, int N>
+template <class Group, typename T, int N,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
 std::enable_if_t<(sizeof(marray<T, N>) > 8), marray<T,N>>
 __acpp_shift_group_right(Group g, marray<T,N> x, typename Group::linear_id_type delta = 1) {
@@ -1149,7 +1176,8 @@ HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_permute_group_by_xo
   }
 }
 
-template <class Group, typename T, int N>
+template <class Group, typename T, int N,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
 std::enable_if_t<(sizeof(vec<T, N>) > 8), vec<T,N>>
 __acpp_permute_group_by_xor(Group g, vec<T,N> x, typename Group::linear_id_type mask) {
@@ -1161,7 +1189,8 @@ __acpp_permute_group_by_xor(Group g, vec<T,N> x, typename Group::linear_id_type 
   return result;
 }
 
-template <class Group, typename T, int N>
+template <class Group, typename T, int N,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
 std::enable_if_t<(sizeof(marray<T, N>) > 8), marray<T,N>>
 __acpp_permute_group_by_xor(Group g, marray<T,N> x, typename Group::linear_id_type mask) {
@@ -1218,7 +1247,8 @@ HIPSYCL_BUILTIN std::enable_if_t<(sizeof(T) <= 8), T> __acpp_select_from_group(
 }
 
 
-template <class Group, typename T, int N>
+template <class Group, typename T, int N,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
 std::enable_if_t<(sizeof(vec<T, N>) > 8), vec<T,N>>
 __acpp_select_from_group(Group g, vec<T,N> x, typename Group::id_type remote_local_id) {
@@ -1230,7 +1260,8 @@ __acpp_select_from_group(Group g, vec<T,N> x, typename Group::id_type remote_loc
   return result;
 }
 
-template <class Group, typename T, int N>
+template <class Group, typename T, int N,
+          std::enable_if_t<is_group_v<std::decay_t<Group>>, bool> = true>
 HIPSYCL_BUILTIN
 std::enable_if_t<(sizeof(marray<T, N>) > 8), marray<T,N>>
 __acpp_select_from_group(Group g, marray<T,N> x, typename Group::id_type remote_local_id) {
