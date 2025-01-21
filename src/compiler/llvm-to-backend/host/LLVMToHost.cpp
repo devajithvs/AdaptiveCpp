@@ -91,10 +91,13 @@ bool LLVMToHostTranslator::toBackendFlavor(llvm::Module &M, PassHandler &PH) {
   if (!this->linkBitcodeFile(M, BuiltinBitcodeFile))
     return false;
 
-  // Internalize all global variables - this is fine because llvm-to-backend
-  // lowering always happens *after* linking in all dependencies
+  // Internalize all constant global variables that don't their definition
+  // to be imported from external sources - this is fine because llvm-to-backend
+  // lowering always happens *after* linking in all dependencies, and therefore
+  // no symbols need to be exported to other TUs, ever.
   for(auto& GV : M.globals()) {
-    if(!llvmutils::starts_with(GV.getName(), "__acpp_cbs"))
+    if (GV.isConstant() && GV.hasInitializer() &&
+        !llvmutils::starts_with(GV.getName(), "__acpp_cbs"))
       GV.setLinkage(llvm::GlobalValue::LinkageTypes::InternalLinkage);
   }
 
