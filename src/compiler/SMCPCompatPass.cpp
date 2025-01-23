@@ -20,7 +20,7 @@ llvm::PreservedAnalyses SMCPCompatPass::run(llvm::Module& M, llvm::ModuleAnalysi
   
   // LLVM 18 does not yet support readlane.i32. However,
   // LLVM 18 based ROCm (e.g. ROCm 6.2) may already use this builtin.
-#if LLVM_VERSION_MAJOR == 18
+#if LLVM_VERSION_MAJOR == 18 && !defined(ROCM_CLANG_VERSION)
   for(auto& F : M) {
     if(F.getName() == "llvm.amdgcn.readlane.i32")
       F.setName("llvm.amdgcn.readlane");
