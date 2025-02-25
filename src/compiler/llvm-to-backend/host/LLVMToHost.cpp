@@ -125,26 +125,30 @@ bool LLVMToHostTranslator::translateToBackendFormat(llvm::Module &FlavoredModule
   auto InputFile = llvm::sys::fs::TempFile::create("acpp-sscp-host-%%%%%%.bc");
   auto OutputFile = llvm::sys::fs::TempFile::create("acpp-sscp-host-%%%%%%.so");
 
-  if (auto E = InputFile.takeError()) {
-    this->registerError("LLVMToHost: Could not create temp file: " + InputFile->TmpName);
-    return false;
-  }
+  auto checkFileError = [&](auto& F) {
+    auto E = F.takeError();
+    if(E){
+      this->registerError("LLVMToAmdgpu: Could not create temp file: " + F->TmpName);
+      return false;
+    }
+    return true;
+  };
 
-  if (auto E = OutputFile.takeError()) {
-    this->registerError("LLVMToHost: Could not create temp file: " + OutputFile->TmpName);
-    return false;
-  }
+  if(!checkFileError(InputFile)) return false;
+  if(!checkFileError(OutputFile)) return false;
 
-  std::string OutputFilename = OutputFile->TmpName;
+  // if (auto E = InputFile.takeError()) {
+  //   this->registerError("LLVMToHost: Could not create temp file: " + InputFile->TmpName);
+  //   return false;
+  // }
 
-  AtScopeExit DestroyInputFile([&]() {
-    if (InputFile->discard())
-      ;
-  });
-  AtScopeExit DestroyOutputFile([&]() {
-    if (OutputFile->discard())
-      ;
-  });
+  // if (auto E = OutputFile.takeError()) {
+  //   this->registerError("LLVMToHost: Could not create temp file: " + OutputFile->TmpName);
+  //   return false;
+  // }
+
+  AtScopeExit DestroyInputFile([&]() { consumeError(std::move(InputFile->discard())); });
+  AtScopeExit DestroyOutputFile([&]() { consumeError(std::move(OutputFile->discard())); });
 
   std::error_code EC;
   llvm::raw_fd_ostream InputStream{InputFile->FD, false};
@@ -164,7 +168,7 @@ bool LLVMToHostTranslator::translateToBackendFormat(llvm::Module &FlavoredModule
                                                     "-Wno-pass-failed",
                                                     "-fPIC",
                                                     "-o",
-                                                    OutputFilename,
+                                                    OutputFile->TmpName,
                                                     InputFile->TmpName};
 
   std::string ArgString;
