@@ -52,6 +52,7 @@ make_kernel_launcher(sycl::id<Dim> offset, sycl::range<Dim> local_range,
 
   using name_traits = kernel_name_traits<KernelNameTag, Kernel>;
 
+  hipsycl::glue::sscp::ensure_local_sscp_hcf_registered();
   kernel_launcher_data static_launcher_data;
   common::auto_small_vector<std::unique_ptr<rt::backend_kernel_launcher>>
       launchers;

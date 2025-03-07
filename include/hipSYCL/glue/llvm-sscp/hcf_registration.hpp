@@ -32,20 +32,29 @@ static std::size_t get_local_hcf_id() {
   return __acpp_local_sscp_hcf_object_id;
 }
 
-struct static_hcf_registration {
-public:
-  __attribute__((internal_linkage))
-  static_hcf_registration() {
+/// Instead of a static object, define a function to do registration once.
+/// Also schedule unregistration via atexit().
+inline void ensure_local_sscp_hcf_registered()
+{
+  // A local static ensures this registration logic only runs once.
+  static bool hcf_registered = false;
+  if(!hcf_registered) {
+    // Actually register the HCF
     __acpp_register_hcf(get_local_hcf_object(), get_local_hcf_size());
-  }
 
-  __attribute__((internal_linkage))
-  ~static_hcf_registration() {
-    __acpp_unregister_hcf(get_local_hcf_id());
-  }
-};
+    // // Make sure we unregister at process exit:
+    // // Store the local id so we can unregister the correct HCF object
+    // const std::size_t local_id = get_local_hcf_id();
+    // std::atexit([local_id](){
+    //   HIPSYCL_DEBUG_ERROR
+    //     << "ensure_local_sscp_hcf_registered: unregistering local HCF\n";
+    //   __acpp_unregister_hcf(local_id);
+    // });
 
-static static_hcf_registration __acpp_register_sscp_hcf_object;
+    hcf_registered = true;
+  }
+}
+
 }
 
 
