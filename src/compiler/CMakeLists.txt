@@ -75,7 +75,7 @@ else()
   set(REFLECTION_BUILTINS "")
 endif()
 
-add_library(acpp-clang MODULE
+add_library(acpp-clang
   AdaptiveCppClangPlugin.cpp
   GlobalsPruningPass.cpp
   SMCPCompatPass.cpp

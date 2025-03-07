@@ -1,5 +1,5 @@
 
-add_library(acpp-common SHARED
+add_library(acpp-common STATIC
     filesystem.cpp
     appdb.cpp)
 

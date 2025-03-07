@@ -283,7 +283,7 @@ if(WITH_OPENCL_BACKEND OR WITH_LEVEL_ZERO_BACKEND)
   endif()
 endif()
 
-if(BUILD_CLANG_PLUGIN)
+if(0) # We've already handled all the LLVM parts from the CLING side
   set(LLVM_DIR_OLD ${LLVM_DIR})
   find_package(LLVM CONFIG)
   if(LLVM_DIR_OLD AND NOT ("${LLVM_DIR_OLD}" STREQUAL "${LLVM_DIR}"))
@@ -419,6 +419,7 @@ set(ACPP_FILESYSTEM_SEARCH_OPTIONS "Final;Experimental;Boost" CACHE STRING "Whic
 ## Do not define any variables that might be used by build
 ## targets below this line.
 ##########################################################
+include_directories(${PROJECT_BINARY_DIR}/include)
 add_subdirectory(src)
 
 set(DEFAULT_WIN32_CUDA_LINK_LINE "-L$HIPSYCL_CUDA_LIB_PATH -lcudart")

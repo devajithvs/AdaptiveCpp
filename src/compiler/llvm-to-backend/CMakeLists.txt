@@ -20,7 +20,7 @@ function(create_llvm_based_library)
   set(target ${CREATE_LLVM_LIBRARY_TARGET})
   set(sources ${CREATE_LLVM_LIBRARY_SOURCES})
 
-  add_library(${target} SHARED
+  add_library(${target}
     ${sources})
 
   target_include_directories(${target} PRIVATE
@@ -32,10 +32,7 @@ function(create_llvm_based_library)
     ${LLVM_DEFINITIONS_LIST})
   target_compile_definitions(${target} PRIVATE -DHIPSYCL_COMPILER_COMPONENT)
   find_library(LLVM_LIBRARY NAMES LLVM LLVM-${LLVM_VERSION_MAJOR} HINTS ${LLVM_LIBRARY_DIRS} NO_DEFAULT_PATH)
-  if(NOT LLVM_LIBRARY)
-    message(FATAL_ERROR "LLVM at ${LLVM_DIR} does not have libLLVM.so. Please disable SSCP and related backends (-DWITH_SSCP_COMPILER=OFF -DWITH_OPENCL_BACKEND=OFF -DWITH_LEVEL_ZERO_BACKEND=OFF) or choose another LLVM installation")
-  endif()
-  llvm_config(${target} USE_SHARED core support irreader passes)
+  llvm_config(${target} core support irreader passes)
   # We need symbolic functions for stdpar
   target_link_libraries(${target} PRIVATE ${HIPSYCL_STDPAR_RT_LINKER_FLAGS})
 
@@ -58,6 +55,10 @@ function(create_llvm_to_backend_library)
 
   create_llvm_based_library(TARGET ${target} SOURCES ${sources})
   target_link_libraries(${target} PUBLIC llvm-to-backend acpp-common)
+
+  string(REPLACE "llvm-to-" "" backend "${target}")
+  set(dep_target "libkernel-sscp-${backend}")
+  add_dependencies(${target} ${dep_target})
 endfunction()
 
 function(create_llvm_to_backend_tool)

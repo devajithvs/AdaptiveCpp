@@ -22,7 +22,7 @@ set(HIPSYCL_RT_EXTRA_LINKER_FLAGS ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} ${HIPSYCL_STD
 
 set(CMAKE_INSTALL_RPATH ${base} ${base}/hipSYCL)
 
-add_library(acpp-rt SHARED
+add_library(acpp-rt STATIC
   allocator.cpp
   allocation_tracker.cpp
   application.cpp
@@ -51,6 +51,14 @@ add_library(acpp-rt SHARED
   generic/async_worker.cpp
   hw_model/memcpy.cpp
   serialization/serialization.cpp)
+
+target_compile_definitions(acpp-rt PRIVATE
+  $<$<BOOL:${WITH_CUDA_BACKEND}>:WITH_CUDA_BACKEND>
+  $<$<BOOL:${WITH_ROCM_BACKEND}>:WITH_ROCM_BACKEND>
+  $<$<BOOL:${WITH_LEVEL_ZERO_BACKEND}>:WITH_LEVEL_ZERO_BACKEND>
+  $<$<BOOL:${WITH_OPENCL_BACKEND}>:WITH_OPENCL_BACKEND>
+  $<$<BOOL:${WITH_CPU_BACKEND}>:WITH_CPU_BACKEND>
+)
 
 target_compile_options(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
 target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} acpp-common Threads::Threads)
@@ -103,7 +111,7 @@ install(TARGETS acpp-rt
 set(CMAKE_INSTALL_RPATH ${base}/../ ${base}/llvm-to-backend)
 
 if(WITH_CUDA_BACKEND)
-  add_library(rt-backend-cuda SHARED
+  add_library(rt-backend-cuda STATIC
     cuda/cuda_event.cpp
     cuda/cuda_event_pool.cpp
     cuda/cuda_queue.cpp
@@ -132,6 +140,7 @@ if(WITH_CUDA_BACKEND)
     set_property(TARGET rt-backend-cuda PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
+  target_link_libraries(acpp-rt PRIVATE rt-backend-cuda)
   install(TARGETS rt-backend-cuda
         RUNTIME DESTINATION bin/hipSYCL
         LIBRARY DESTINATION lib/hipSYCL
@@ -141,7 +150,7 @@ endif()
 if(WITH_ROCM_BACKEND)
   set(ENABLE_ROCM_UNIFIED_MEMORY_API ON CACHE BOOL "Utilize unified memory API in ROCm. Older ROCm versions may not support this.")
 
-  add_library(rt-backend-hip SHARED
+  add_library(rt-backend-hip STATIC
     hip/hip_event.cpp
     hip/hip_event_pool.cpp
     hip/hip_queue.cpp
@@ -178,6 +187,7 @@ if(WITH_ROCM_BACKEND)
     set_property(TARGET rt-backend-hip PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
+  target_link_libraries(acpp-rt PRIVATE rt-backend-hip)
   install(TARGETS rt-backend-hip
         RUNTIME DESTINATION bin/hipSYCL
         LIBRARY DESTINATION lib/hipSYCL
@@ -185,7 +195,7 @@ if(WITH_ROCM_BACKEND)
 endif()
 
 if(WITH_LEVEL_ZERO_BACKEND)
-  add_library(rt-backend-ze SHARED
+  add_library(rt-backend-ze STATIC
     ze/ze_backend.cpp
     ze/ze_hardware_manager.cpp
     ze/ze_allocator.cpp
@@ -208,6 +218,7 @@ if(WITH_LEVEL_ZERO_BACKEND)
     set_property(TARGET rt-backend-ze PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
+  target_link_libraries(acpp-rt PRIVATE rt-backend-ze)
   install(TARGETS rt-backend-ze
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
@@ -249,7 +260,7 @@ if(WITH_OPENCL_BACKEND)
     $<INSTALL_INTERFACE:include/ocl-cxx>
   )
 
-  add_library(rt-backend-ocl SHARED
+  add_library(rt-backend-ocl STATIC
     ocl/ocl_backend.cpp
     ocl/ocl_code_object.cpp
     ocl/ocl_hardware_manager.cpp
@@ -274,13 +285,14 @@ if(WITH_OPENCL_BACKEND)
     set_property(TARGET rt-backend-ocl PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
+  target_link_libraries(acpp-rt PRIVATE rt-backend-ocl)
   install(TARGETS rt-backend-ocl
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
 endif()
 
 if(WITH_CPU_BACKEND)
-  add_library(rt-backend-omp SHARED
+  add_library(rt-backend-omp STATIC
     omp/omp_allocator.cpp
     omp/omp_backend.cpp
     omp/omp_event.cpp
@@ -343,6 +355,7 @@ if(WITH_CPU_BACKEND)
     set_property(TARGET rt-backend-omp PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
+  target_link_libraries(acpp-rt PRIVATE rt-backend-omp)
   install(TARGETS rt-backend-omp
       RUNTIME DESTINATION bin/hipSYCL
       LIBRARY DESTINATION lib/hipSYCL
