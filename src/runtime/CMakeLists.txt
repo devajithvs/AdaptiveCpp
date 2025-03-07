@@ -22,7 +22,7 @@ set(HIPSYCL_RT_EXTRA_LINKER_FLAGS ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} ${HIPSYCL_STD
 
 set(CMAKE_INSTALL_RPATH ${base} ${base}/hipSYCL)
 
-add_library(acpp-rt SHARED
+add_library(acpp-rt STATIC
   allocator.cpp
   allocation_tracker.cpp
   application.cpp
@@ -51,6 +51,14 @@ add_library(acpp-rt SHARED
   generic/async_worker.cpp
   hw_model/memcpy.cpp
   serialization/serialization.cpp)
+
+target_compile_definitions(acpp-rt PRIVATE
+  $<$<BOOL:${WITH_CUDA_BACKEND}>:WITH_CUDA_BACKEND>
+  $<$<BOOL:${WITH_ROCM_BACKEND}>:WITH_ROCM_BACKEND>
+  $<$<BOOL:${WITH_LEVEL_ZERO_BACKEND}>:WITH_LEVEL_ZERO_BACKEND>
+  $<$<BOOL:${WITH_OPENCL_BACKEND}>:WITH_OPENCL_BACKEND>
+  $<$<BOOL:${WITH_CPU_BACKEND}>:WITH_CPU_BACKEND>
+)
 
 target_compile_options(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
 target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} acpp-common Threads::Threads)
@@ -94,7 +102,7 @@ if(is_ipo_supported)
 endif()
 
 install(TARGETS acpp-rt
-        EXPORT install_exports
+        EXPORT ClingTargets
         INCLUDES DESTINATION include/AdaptiveCpp
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
@@ -103,7 +111,7 @@ install(TARGETS acpp-rt
 set(CMAKE_INSTALL_RPATH ${base}/../ ${base}/llvm-to-backend)
 
 if(WITH_CUDA_BACKEND)
-  add_library(rt-backend-cuda SHARED
+  add_library(rt-backend-cuda STATIC
     cuda/cuda_event.cpp
     cuda/cuda_event_pool.cpp
     cuda/cuda_queue.cpp
@@ -132,7 +140,10 @@ if(WITH_CUDA_BACKEND)
     set_property(TARGET rt-backend-cuda PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
+  target_link_libraries(acpp-rt PRIVATE rt-backend-cuda)
+
   install(TARGETS rt-backend-cuda
+        EXPORT ClingTargets
         RUNTIME DESTINATION bin/hipSYCL
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
@@ -179,6 +190,7 @@ if(WITH_ROCM_BACKEND)
   endif()
 
   install(TARGETS rt-backend-hip
+        EXPORT ClingTargets
         RUNTIME DESTINATION bin/hipSYCL
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
@@ -209,6 +221,7 @@ if(WITH_LEVEL_ZERO_BACKEND)
   endif()
 
   install(TARGETS rt-backend-ze
+        EXPORT ClingTargets
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
 endif()
@@ -269,12 +282,13 @@ if(WITH_OPENCL_BACKEND)
   endif()
 
   install(TARGETS rt-backend-ocl
+        EXPORT ClingTargets
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
 endif()
 
 if(WITH_CPU_BACKEND)
-  add_library(rt-backend-omp SHARED
+  add_library(rt-backend-omp STATIC
     omp/omp_allocator.cpp
     omp/omp_backend.cpp
     omp/omp_event.cpp
@@ -337,7 +351,10 @@ if(WITH_CPU_BACKEND)
     set_property(TARGET rt-backend-omp PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
+  target_link_libraries(acpp-rt PRIVATE rt-backend-omp)
+
   install(TARGETS rt-backend-omp
+  EXPORT ClingTargets
       RUNTIME DESTINATION bin/hipSYCL
       LIBRARY DESTINATION lib/hipSYCL
       ARCHIVE DESTINATION lib/hipSYCL)

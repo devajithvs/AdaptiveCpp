@@ -20,7 +20,7 @@ function(create_llvm_based_library)
   set(target ${CREATE_LLVM_LIBRARY_TARGET})
   set(sources ${CREATE_LLVM_LIBRARY_SOURCES})
 
-  add_library(${target} SHARED
+  add_library(${target}
     ${sources})
 
   target_include_directories(${target} PRIVATE
@@ -32,10 +32,7 @@ function(create_llvm_based_library)
     ${LLVM_DEFINITIONS_LIST})
   target_compile_definitions(${target} PRIVATE -DHIPSYCL_COMPILER_COMPONENT)
   find_library(LLVM_LIBRARY NAMES LLVM LLVM-${LLVM_VERSION_MAJOR} HINTS ${LLVM_LIBRARY_DIRS} NO_DEFAULT_PATH)
-  if(NOT LLVM_LIBRARY)
-    message(FATAL_ERROR "LLVM at ${LLVM_DIR} does not have libLLVM.so. Please disable SSCP and related backends (-DWITH_SSCP_COMPILER=OFF -DWITH_OPENCL_BACKEND=OFF -DWITH_LEVEL_ZERO_BACKEND=OFF) or choose another LLVM installation")
-  endif()
-  llvm_config(${target} USE_SHARED core support irreader passes)
+  llvm_config(${target} core support irreader passes)
   # We need symbolic functions for stdpar
   target_link_libraries(${target} PRIVATE ${HIPSYCL_STDPAR_RT_LINKER_FLAGS})
 
@@ -124,6 +121,8 @@ if(WITH_SSCP_COMPILER)
       ProcessS2ReflectionPass.cpp
       ../sscp/KernelOutliningPass.cpp)
 
+  install(TARGETS llvm-to-backend EXPORT ClingTargets)
+
   if(WITH_LLVM_TO_SPIRV)
     add_hipsycl_llvm_backend(
       BACKEND spirv 
@@ -159,6 +158,7 @@ if(WITH_SSCP_COMPILER)
     target_compile_definitions(llvm-to-spirv PRIVATE
       -DHIPSYCL_RELATIVE_LLVMSPIRV_PATH="${LLVMSPIRV_RELATIVE_PATH}")
     
+    add_dependencies(llvm-to-spirv libkernel-sscp-spirv)
     
   endif()
 
@@ -171,6 +171,9 @@ if(WITH_SSCP_COMPILER)
     target_compile_definitions(llvm-to-ptx PRIVATE
       -DHIPSYCL_CLANG_PATH="${CLANG_EXECUTABLE_PATH}" 
       -DHIPSYCL_CUDA_PATH="${CUDA_TOOLKIT_ROOT_DIR}")
+
+    add_dependencies(llvm-to-ptx libkernel-sscp-ptx)
+    install(TARGETS llvm-to-ptx EXPORT ClingTargets)
   endif()
 
   if(WITH_LLVM_TO_AMDGPU_AMDHSA)
@@ -190,6 +193,7 @@ if(WITH_SSCP_COMPILER)
     target_compile_definitions(llvm-to-amdgpu PRIVATE
         -DACPP_CLANG_PATH="${CLANG_EXECUTABLE_PATH}")
 
+    add_dependencies(llvm-to-amdgpu libkernel-sscp-amdgpu)
     find_library(HIPRTC_LIBRARY hiprtc HINTS ${ROCM_PATH}/lib)
    
     if(HIPRTC_LIBRARY)
@@ -227,6 +231,8 @@ if(WITH_SSCP_COMPILER)
       -DHIPSYCL_CLANG_PATH="${CLANG_EXECUTABLE_PATH}" 
       -DHIPSYCL_HOST_CPU_FLAG="${HOST_CPU_FLAG}")
     target_link_libraries(llvm-to-host PRIVATE acpp-clang-cbs)
+    add_dependencies(llvm-to-host libkernel-sscp-host)
+    install(TARGETS llvm-to-host EXPORT ClingTargets)
   endif()
 
 endif()

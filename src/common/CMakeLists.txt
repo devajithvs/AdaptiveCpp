@@ -1,5 +1,5 @@
 
-add_library(acpp-common SHARED
+add_library(acpp-common STATIC
     filesystem.cpp
     appdb.cpp)
 
@@ -46,7 +46,7 @@ else()
 endif()
 
 install(TARGETS acpp-common
-        EXPORT install_exports
+        EXPORT ClingTargets
         INCLUDES DESTINATION include/AdaptiveCpp
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib

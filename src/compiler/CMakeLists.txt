@@ -75,7 +75,7 @@ else()
   set(REFLECTION_BUILTINS "")
 endif()
 
-add_library(acpp-clang MODULE
+add_library(acpp-clang
   AdaptiveCppClangPlugin.cpp
   GlobalsPruningPass.cpp
   SMCPCompatPass.cpp
@@ -131,6 +131,7 @@ function(configure_target)
   endif()
 
   install(TARGETS ${target}
+          EXPORT ClingTargets
           LIBRARY DESTINATION lib
           RUNTIME DESTINATION bin
           ARCHIVE DESTINATION lib)
