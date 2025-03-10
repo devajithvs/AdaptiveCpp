@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 project(acpp-clang)
 
-get_filename_component(CLANG_BINARY_PREFIX ${CLANG_EXECUTABLE_PATH} DIRECTORY)
+# get_filename_component(CLANG_BINARY_PREFIX ${CLANG_EXECUTABLE_PATH} DIRECTORY)
 
-if(NOT HIPSYCL_DEBUG_LEVEL)
-  set(HIPSYCL_DEBUG_LEVEL 2 CACHE INTEGER)
-endif()
+# if(NOT HIPSYCL_DEBUG_LEVEL)
+#   set(HIPSYCL_DEBUG_LEVEL 2 CACHE INTEGER)
+# endif()
+
+set(WITH_SSCP_COMPILER ON)
 
 add_definitions(-DHIPSYCL_DEBUG_LEVEL=${HIPSYCL_DEBUG_LEVEL})
 if(WITH_ACCELERATED_CPU)
@@ -75,7 +77,7 @@ else()
   set(REFLECTION_BUILTINS "")
 endif()
 
-add_library(acpp-clang MODULE
+add_library(acpp-clang
   AdaptiveCppClangPlugin.cpp
   GlobalsPruningPass.cpp
   SMCPCompatPass.cpp
@@ -131,6 +133,7 @@ function(configure_target)
   endif()
 
   install(TARGETS ${target}
+          EXPORT ClingTargets
           LIBRARY DESTINATION lib
           RUNTIME DESTINATION bin
           ARCHIVE DESTINATION lib)
