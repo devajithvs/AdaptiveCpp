@@ -20,7 +20,7 @@ function(create_llvm_based_library)
   set(target ${CREATE_LLVM_LIBRARY_TARGET})
   set(sources ${CREATE_LLVM_LIBRARY_SOURCES})
 
-  add_library(${target} SHARED
+  add_library(${target}
     ${sources})
 
   target_include_directories(${target} PRIVATE
