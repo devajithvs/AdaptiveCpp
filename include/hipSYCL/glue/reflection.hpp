@@ -118,7 +118,7 @@ struct __acpp_reflection_tu_init_trigger {
   }
 };
 
-static __acpp_reflection_tu_init_trigger __reflection_init;
+// static __acpp_reflection_tu_init_trigger __reflection_init;
 
 
 namespace hipsycl::glue::reflection {
