@@ -9,7 +9,7 @@ set(HIPSYCL_RT_EXTRA_LINKER_FLAGS "")
 
 
 list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake/")
-find_package(Filesystem REQUIRED "${ACPP_FILESYSTEM_SEARCH_OPTIONS}")
+# find_package(Filesystem REQUIRED "${ACPP_FILESYSTEM_SEARCH_OPTIONS}")
 set(CXX_FILESYSTEM_HEADER "${CXX_FILESYSTEM_HEADER}" PARENT_SCOPE)
 set(CXX_FILESYSTEM_NAMESPACE "${CXX_FILESYSTEM_NAMESPACE}" PARENT_SCOPE)
 list(REMOVE_AT CMAKE_MODULE_PATH 0)
@@ -79,7 +79,7 @@ if(WIN32)
     set(HIPSYCL_RT_LIBRARY_OUTPUT_NAME "${HIPSYCL_RT_LIBRARY_OUTPUT_NAME}.dll" PARENT_SCOPE)
   endif()
 else()
-  target_link_libraries(acpp-rt PRIVATE dl std::filesystem)
+  target_link_libraries(acpp-rt PRIVATE dl)
 
   # ensure actual output and expected are equivalent
   set_target_properties(acpp-rt PROPERTIES LIBRARY_OUTPUT_NAME ${HIPSYCL_RT_LIBRARY_OUTPUT_NAME})
@@ -94,7 +94,7 @@ if(is_ipo_supported)
 endif()
 
 install(TARGETS acpp-rt
-        EXPORT install_exports
+        EXPORT ClingTargets
         INCLUDES DESTINATION include/AdaptiveCpp
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
@@ -133,6 +133,7 @@ if(WITH_CUDA_BACKEND)
   endif()
 
   install(TARGETS rt-backend-cuda
+        EXPORT ClingTargets
         RUNTIME DESTINATION bin/hipSYCL
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
@@ -179,6 +180,7 @@ if(WITH_ROCM_BACKEND)
   endif()
 
   install(TARGETS rt-backend-hip
+        EXPORT ClingTargets
         RUNTIME DESTINATION bin/hipSYCL
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
@@ -209,6 +211,7 @@ if(WITH_LEVEL_ZERO_BACKEND)
   endif()
 
   install(TARGETS rt-backend-ze
+        EXPORT ClingTargets
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
 endif()
@@ -269,6 +272,7 @@ if(WITH_OPENCL_BACKEND)
   endif()
 
   install(TARGETS rt-backend-ocl
+  EXPORT ClingTargets
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
 endif()
@@ -338,6 +342,7 @@ if(WITH_CPU_BACKEND)
   endif()
 
   install(TARGETS rt-backend-omp
+  EXPORT ClingTargets
       RUNTIME DESTINATION bin/hipSYCL
       LIBRARY DESTINATION lib/hipSYCL
       ARCHIVE DESTINATION lib/hipSYCL)
