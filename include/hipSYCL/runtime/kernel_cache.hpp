@@ -265,8 +265,8 @@ public:
   void register_kernel() {
     // This function is not needed in the current implementation, but it might
     // be useful in the future.
-    std::string name = typeid(KernelT).name();
-    HIPSYCL_DEBUG_INFO << "kernel_cache: Registering kernel " << name << "\n";
+    // std::string name = typeid(KernelT).name();
+    HIPSYCL_DEBUG_INFO << "kernel_cache: Registering kernel \n";
   }
 
   /// Retrieve object for provided code object id, or nullptr
