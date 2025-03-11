@@ -250,7 +250,7 @@ hcf_cache& hcf_cache::get() {
 }
 
 hcf_object_id hcf_cache::register_hcf_object(const common::hcf_container &obj) {
-
+  HIPSYCL_DEBUG_ERROR << "Why is register_hcf_object not running?\n";
   std::lock_guard<std::mutex> lock{_mutex};
 
   if (!obj.root_node()->has_key("object-id")) {

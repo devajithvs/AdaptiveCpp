@@ -65,7 +65,7 @@ backend_manager::backend_manager()
                     }))
   {
     HIPSYCL_DEBUG_ERROR << "No CPU backend has been loaded. Terminating." << std::endl;
-    std::terminate();
+    // std::terminate();
   }
 }
 

@@ -36,6 +36,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Transforms/Utils/Cloning.h>
 #include <llvm/Support/CommandLine.h>
+#include "runtime/kernel_cache.hpp"
 
 #include <memory>
 #include <string>
@@ -425,6 +426,7 @@ generateHCF(llvm::Module &DeviceModule, std::size_t HcfObjectId,
     }
   }
   
+  hipsycl::rt::hcf_cache::get().register_hcf_object(HcfObject);
 
   return HcfObject.serialize();
 }
