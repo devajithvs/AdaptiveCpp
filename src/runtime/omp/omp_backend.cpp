@@ -19,17 +19,17 @@
 #include <memory>
 
 
-HIPSYCL_PLUGIN_API_EXPORT
-hipsycl::rt::backend *hipsycl_backend_plugin_create() {
-  return new hipsycl::rt::omp_backend();
-}
+// HIPSYCL_PLUGIN_API_EXPORT
+// hipsycl::rt::backend *hipsycl_backend_plugin_create() {
+//   return new hipsycl::rt::omp_backend();
+// }
 
 static const char *backend_name = "omp";
 
-HIPSYCL_PLUGIN_API_EXPORT
-const char *hipsycl_backend_plugin_get_name() {
-  return backend_name;
-}
+// HIPSYCL_PLUGIN_API_EXPORT
+// const char *hipsycl_backend_plugin_get_name() {
+//   return backend_name;
+// }
 
 
 

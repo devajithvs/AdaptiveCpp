@@ -71,13 +71,15 @@ private:
     std::string BitcodeDir = common::filesystem::join_path(CUDAPath, SubDir);
 
     try {
-      auto Files = common::filesystem::list_regular_files(BitcodeDir);
-      for(const auto& F : Files) {
-        if (F.find("libdevice.") != std::string::npos && F.find(".bc") != std::string::npos) {
-          Out = F;
-          return true;
-        }
-      }
+      // auto Files = common::filesystem::list_regular_files(BitcodeDir);
+      // for(const auto& F : Files) {
+      //   if (F.find("libdevice.") != std::string::npos && F.find(".bc") != std::string::npos) {
+      //     Out = F;
+      //     return true;
+      //   }
+      // }
+      Out = "/usr/local/cuda/nvvm/libdevice/libdevice.10.bc";
+      return true;
     }catch(...) { /* false will be returned anyway at this point */ }
 
     return false;
@@ -200,9 +202,9 @@ bool LLVMToPtxTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
 
   replaceBrokenLLVMIntrinsics(M);
 
-  std::string BuiltinBitcodeFile = 
-    common::filesystem::join_path(common::filesystem::get_install_directory(),
-      {"lib", "hipSYCL", "bitcode", "libkernel-sscp-ptx-full.bc"});
+  std::string BuiltinBitcodeFile = "/home/dvalapar/work/xeus/cling-build/AdaptiveCppInstall/lib/hipSYCL/bitcode/libkernel-sscp-ptx-full.bc";
+    // common::filesystem::join_path(common::filesystem::get_install_directory(),
+    //   {"lib", "hipSYCL", "bitcode", "libkernel-sscp-ptx-full.bc"});
   
   std::string LibdeviceFile;
   if(!LibdevicePath::get(LibdeviceFile)) {
@@ -279,10 +281,12 @@ bool LLVMToPtxTranslator::translateToBackendFormat(llvm::Module &FlavoredModule,
     ArgString += S;
     ArgString += " ";
   }
+  ArgString = "/home/dvalapar/work/xeus/cling-build/bin/clang++ " + ArgString; 
   HIPSYCL_DEBUG_INFO << "LLVMToPtx: Invoking " << ArgString << "\n";
+  HIPSYCL_DEBUG_INFO << "LLVMToPtx: Invoking " << ClangPath << "\n";
 
   int R = llvm::sys::ExecuteAndWait(
-      ClangPath, Invocation);
+      "/home/dvalapar/work/xeus/cling-build/bin/clang++", Invocation);
   
   if(R != 0) {
     this->registerError("LLVMToPtx: clang invocation failed with exit code " +

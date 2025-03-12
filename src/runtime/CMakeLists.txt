@@ -27,6 +27,7 @@ if (CUDA_FOUND)
     message(STATUS "CUDA found: ${CUDA_TOOLKIT_ROOT_DIR}")
     message(STATUS "CUDA libraries: ${CUDA_LIBS}")
 endif()
+set(WITH_SSCP_COMPILER ON)
 
 add_library(acpp-rt SHARED
 cuda/cuda_event.cpp
@@ -38,6 +39,12 @@ cuda/cuda_device_manager.cpp
 cuda/cuda_hardware_manager.cpp
 cuda/cuda_backend.cpp
 cuda/cuda_code_object.cpp
+
+omp/omp_allocator.cpp
+omp/omp_backend.cpp
+omp/omp_event.cpp
+omp/omp_hardware_manager.cpp
+omp/omp_queue.cpp
   allocator.cpp
   allocation_tracker.cpp
   application.cpp
@@ -78,6 +85,22 @@ cuda/cuda_code_object.cpp
   if(is_ipo_supported)
     set_property(TARGET acpp-rt PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
+
+
+  find_package(OpenMP REQUIRED)
+
+
+if(WITH_SSCP_COMPILER)
+  target_sources(acpp-rt PRIVATE omp/omp_code_object.cpp)
+  target_compile_definitions(acpp-rt PRIVATE -DHIPSYCL_WITH_SSCP_COMPILER)
+  target_link_libraries(acpp-rt PRIVATE llvm-to-host)
+endif()
+
+target_link_libraries(acpp-rt PRIVATE OpenMP::OpenMP_CXX)
+
+if(is_ipo_supported)
+  set_property(TARGET acpp-rt PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
 
 target_compile_options(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
 target_link_libraries(acpp-rt PRIVATE cuda /usr/local/cuda/lib64/libcudart.so ${CUDA_LIBS} ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} acpp-common Threads::Threads)

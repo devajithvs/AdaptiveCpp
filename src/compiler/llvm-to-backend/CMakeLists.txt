@@ -6,6 +6,9 @@ set(LLVM_TO_BACKEND_INCLUDE_DIRS
 
 set(CMAKE_INSTALL_RPATH ${base} ${base}/../../)
 
+set(WITH_LLVM_TO_PTX ON)
+set(WITH_LLVM_TO_HOST ON)
+
 function(create_llvm_based_library)
   set(options)
   set(one_value_keywords TARGET)

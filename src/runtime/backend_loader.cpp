@@ -15,6 +15,7 @@
 #include "hipSYCL/common/config.hpp"
 #include "hipSYCL/runtime/device_id.hpp"
 #include "hipSYCL/runtime/cuda/cuda_backend.hpp"
+#include "hipSYCL/runtime/omp/omp_backend.hpp"
 
 #include <cassert>
 
@@ -33,6 +34,10 @@ using namespace hipsycl::rt::detail;
 
 hipsycl::rt::backend *cuda_backend_factory() {
   return new hipsycl::rt::cuda_backend();
+}
+
+hipsycl::rt::backend *omp_backend_factory() {
+  return new hipsycl::rt::omp_backend();
 }
 
 hipsycl::rt::backend *create_backend(void *plugin_handle) {
@@ -75,16 +80,16 @@ namespace hipsycl {
 namespace rt {
 
 void backend_loader::query_backends() {
+  if(is_plugin_active("omp")) {
+    _handles.push_back({"omp", reinterpret_cast<void*>(&omp_backend_factory)});
+    HIPSYCL_DEBUG_INFO << "backend_loader: Successfully opened plugin: " << "omp\n";
+  }
+
   if(is_plugin_active("cuda")) {
     _handles.push_back({"cuda", reinterpret_cast<void*>(&cuda_backend_factory)});
     HIPSYCL_DEBUG_INFO << "backend_loader: Successfully opened plugin: " << "cuda\n";
   }
 
-  // if(is_plugin_active("omp")) {
-  //   _handles.push_back(
-  //     {"omp", &create_omp_backend}
-  //   );
-  // }
 }
 
 backend_loader::~backend_loader() {
@@ -111,10 +116,12 @@ bool backend_loader::has_backend(const std::string &name) const {
 
 backend *backend_loader::create(std::size_t index) const {
   assert(index < _handles.size());
-  
-  // return create_backend(_handles[index].second);
-  return new hipsycl::rt::cuda_backend();
-  // return nullptr;
+  auto backend_name = _handles[index].first;
+  if (backend_name == "cuda")
+    return new hipsycl::rt::cuda_backend();
+  if (backend_name == "omp")
+    return new hipsycl::rt::omp_backend();
+  return nullptr;
 }
 
 backend *backend_loader::create(const std::string &name) const {
