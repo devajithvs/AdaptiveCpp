@@ -163,13 +163,6 @@ std::pair<backend_executor *, device_id>
 select_executor(runtime *rt, dag_node_ptr node, operation *op) {
   device_id dev = node->get_assigned_device();
 
-    rt::device_id preferred_dev{rt::backend_descriptor{rt::hardware_platform::cuda,
-                                          rt::api_platform::cuda},
-                   0};
-  std::cerr << "Device ID: " << preferred_dev << "\n";
-  dev = preferred_dev;
-  std::cerr << "Device ID: " << dev << "\n";
-
   assert(!op->is_requirement());
 
   // If we have been requested to run on a particular executor, do this.
@@ -181,7 +174,6 @@ select_executor(runtime *rt, dag_node_ptr node, operation *op) {
   }
 
 
-  
   backend_id executor_backend; device_id preferred_device;
   if (op->has_preferred_backend(executor_backend, preferred_device)) {
     // If we want an executor from a different backend, we may need to pass

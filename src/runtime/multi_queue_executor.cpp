@@ -100,8 +100,6 @@ multi_queue_executor::multi_queue_executor(
     const backend &b, queue_factory_function queue_factory)
     : _backend{b.get_unique_backend_id()} {
   std::size_t num_devices = b.get_hardware_manager()->get_num_devices();
-  HIPSYCL_DEBUG_INFO << "multi_queue_executor: Spawned for backend "
-                     << b.get_name() << " with configuration: " << std::endl;
 
   _device_data.resize(num_devices);
 

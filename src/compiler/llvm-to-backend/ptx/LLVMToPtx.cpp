@@ -202,7 +202,7 @@ bool LLVMToPtxTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
   // TODO-DEV: Rethink this
   std::string BuiltinBitcodeFile =
     common::filesystem::join_path(common::filesystem::get_install_directory(),
-      {"tools", "cling", "adaptiveCpp", "src", "libkernel", "sscp", "ptx" , "libkernel-sscp-ptx-full.bc"});
+      {"lib", "hipSYCL", "bitcode", "libkernel-sscp-ptx-full.bc"});
   
   std::string LibdeviceFile;
   if(!LibdevicePath::get(LibdeviceFile)) {
