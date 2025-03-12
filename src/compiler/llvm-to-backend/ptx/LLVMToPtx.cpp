@@ -71,14 +71,13 @@ private:
     std::string BitcodeDir = common::filesystem::join_path(CUDAPath, SubDir);
 
     try {
-      // auto Files = common::filesystem::list_regular_files(BitcodeDir);
-      // for(const auto& F : Files) {
-      //   if (F.find("libdevice.") != std::string::npos && F.find(".bc") != std::string::npos) {
-      //     Out = F;
-      //     return true;
-      //   }
-      // }
-      Out = "/usr/local/cuda/nvvm/libdevice/libdevice.10.bc";
+      auto Files = common::filesystem::list_regular_files(BitcodeDir);
+      for(const auto& F : Files) {
+        if (F.find("libdevice.") != std::string::npos && F.find(".bc") != std::string::npos) {
+          Out = F;
+          return true;
+        }
+      }
       return true;
     }catch(...) { /* false will be returned anyway at this point */ }
 
