@@ -103,7 +103,7 @@ if(is_ipo_supported)
 endif()
 
 target_compile_options(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
-target_link_libraries(acpp-rt PRIVATE cuda /usr/local/cuda/lib64/libcudart.so ${CUDA_LIBS} ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} acpp-common Threads::Threads)
+target_link_libraries(acpp-rt PRIVATE ${CUDA_LIBS} ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} acpp-common Threads::Threads)
 
 # syclcc already knows about these include directories, but clangd-based tooling does not.
 # Specifying them explicitly ensures that IDEs can resolve all hipSYCL includes correctly.

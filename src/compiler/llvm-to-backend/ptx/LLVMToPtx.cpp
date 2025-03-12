@@ -279,12 +279,10 @@ bool LLVMToPtxTranslator::translateToBackendFormat(llvm::Module &FlavoredModule,
     ArgString += S;
     ArgString += " ";
   }
-  ArgString = "/home/dvalapar/work/xeus/cling-build/bin/clang++ " + ArgString; 
   HIPSYCL_DEBUG_INFO << "LLVMToPtx: Invoking " << ArgString << "\n";
-  HIPSYCL_DEBUG_INFO << "LLVMToPtx: Invoking " << ClangPath << "\n";
 
   int R = llvm::sys::ExecuteAndWait(
-      "/home/dvalapar/work/xeus/cling-build/bin/clang++", Invocation);
+      ClangPath, Invocation);
   
   if(R != 0) {
     this->registerError("LLVMToPtx: clang invocation failed with exit code " +
