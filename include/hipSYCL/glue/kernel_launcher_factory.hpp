@@ -20,6 +20,7 @@
 #include "hipSYCL/runtime/kernel_launcher.hpp"
 #include "hipSYCL/glue/kernel_names.hpp"
 #include "hipSYCL/common/small_vector.hpp"
+#include "hipSYCL/glue/llvm-sscp/sscp_kernel_launcher.hpp"
 
 #if defined(__ACPP_ENABLE_HIP_TARGET__)
 #include "hip/hip_kernel_launcher.hpp"
