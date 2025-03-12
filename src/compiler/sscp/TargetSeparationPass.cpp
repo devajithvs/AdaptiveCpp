@@ -21,6 +21,7 @@
 #include "hipSYCL/compiler/utils/ProcessFunctionAnnotationsPass.hpp"
 #include "hipSYCL/compiler/utils/LLVMUtils.hpp"
 #include "hipSYCL/common/hcf_container.hpp"
+#include "hipSYCL/runtime/kernel_cache.hpp"
 
 #include <cstddef>
 
@@ -36,7 +37,6 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Transforms/Utils/Cloning.h>
 #include <llvm/Support/CommandLine.h>
-#include "runtime/kernel_cache.hpp"
 
 #include <memory>
 #include <string>
