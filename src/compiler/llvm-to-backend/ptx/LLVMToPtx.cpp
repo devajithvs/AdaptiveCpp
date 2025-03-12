@@ -78,7 +78,6 @@ private:
           return true;
         }
       }
-      return true;
     }catch(...) { /* false will be returned anyway at this point */ }
 
     return false;
