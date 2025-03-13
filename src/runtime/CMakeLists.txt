@@ -29,7 +29,7 @@ if (CUDA_FOUND)
 endif()
 set(WITH_SSCP_COMPILER ON)
 
-add_library(acpp-rt SHARED
+add_library(acpp-rt STATIC
 cuda/cuda_event.cpp
 cuda/cuda_event_pool.cpp
 cuda/cuda_queue.cpp

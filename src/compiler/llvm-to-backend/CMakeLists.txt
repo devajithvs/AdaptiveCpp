@@ -123,6 +123,13 @@ if(WITH_SSCP_COMPILER)
       DeadArgumentEliminationPass.cpp
       ProcessS2ReflectionPass.cpp
       ../sscp/KernelOutliningPass.cpp)
+  
+  install(TARGETS llvm-to-backend
+    EXPORT ClingTargets
+    INCLUDES DESTINATION include/AdaptiveCpp
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
 
   if(WITH_LLVM_TO_SPIRV)
     add_hipsycl_llvm_backend(
@@ -171,6 +178,13 @@ if(WITH_SSCP_COMPILER)
     target_compile_definitions(llvm-to-ptx PRIVATE
       -DHIPSYCL_CLANG_PATH="${CLANG_EXECUTABLE_PATH}" 
       -DHIPSYCL_CUDA_PATH="${CUDA_TOOLKIT_ROOT_DIR}")
+    
+    install(TARGETS llvm-to-ptx
+      EXPORT ClingTargets
+      INCLUDES DESTINATION include/AdaptiveCpp
+      RUNTIME DESTINATION bin
+      LIBRARY DESTINATION lib
+      ARCHIVE DESTINATION lib)
   endif()
 
   if(WITH_LLVM_TO_AMDGPU_AMDHSA)
@@ -227,6 +241,12 @@ if(WITH_SSCP_COMPILER)
       -DHIPSYCL_CLANG_PATH="${CLANG_EXECUTABLE_PATH}" 
       -DHIPSYCL_HOST_CPU_FLAG="${HOST_CPU_FLAG}")
     target_link_libraries(llvm-to-host PRIVATE acpp-clang-cbs)
+    install(TARGETS llvm-to-host
+      EXPORT ClingTargets
+      INCLUDES DESTINATION include/AdaptiveCpp
+      RUNTIME DESTINATION bin
+      LIBRARY DESTINATION lib
+      ARCHIVE DESTINATION lib)
   endif()
 
 endif()
