@@ -158,6 +158,7 @@ if(WITH_SSCP_COMPILER)
     target_compile_definitions(llvm-to-spirv PRIVATE
       -DHIPSYCL_RELATIVE_LLVMSPIRV_PATH="${LLVMSPIRV_RELATIVE_PATH}")
     
+    add_dependencies(llvm-to-spirv libkernel-sscp-spirv)
     
   endif()
 
@@ -171,6 +172,7 @@ if(WITH_SSCP_COMPILER)
       -DHIPSYCL_CLANG_PATH="${CLANG_EXECUTABLE_PATH}" 
       -DHIPSYCL_CUDA_PATH="${CUDA_TOOLKIT_ROOT_DIR}")
     
+    add_dependencies(llvm-to-ptx libkernel-sscp-ptx)
     install(TARGETS llvm-to-ptx EXPORT ClingTargets)
   endif()
 
@@ -191,6 +193,7 @@ if(WITH_SSCP_COMPILER)
     target_compile_definitions(llvm-to-amdgpu PRIVATE
         -DACPP_CLANG_PATH="${CLANG_EXECUTABLE_PATH}")
 
+    add_dependencies(llvm-to-amdgpu libkernel-sscp-amdgpu)
     find_library(HIPRTC_LIBRARY hiprtc HINTS ${ROCM_PATH}/lib)
    
     if(HIPRTC_LIBRARY)
@@ -228,6 +231,7 @@ if(WITH_SSCP_COMPILER)
       -DHIPSYCL_CLANG_PATH="${CLANG_EXECUTABLE_PATH}" 
       -DHIPSYCL_HOST_CPU_FLAG="${HOST_CPU_FLAG}")
     target_link_libraries(llvm-to-host PRIVATE acpp-clang-cbs)
+    add_dependencies(llvm-to-host libkernel-sscp-host)
     install(TARGETS llvm-to-host EXPORT ClingTargets)
   endif()
 
