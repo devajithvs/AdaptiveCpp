@@ -52,6 +52,14 @@ add_library(acpp-rt STATIC
   hw_model/memcpy.cpp
   serialization/serialization.cpp)
 
+target_compile_definitions(acpp-rt PRIVATE
+  $<$<BOOL:${WITH_CUDA_BACKEND}>:WITH_CUDA_BACKEND>
+  $<$<BOOL:${WITH_ROCM_BACKEND}>:WITH_ROCM_BACKEND>
+  $<$<BOOL:${WITH_LEVEL_ZERO_BACKEND}>:WITH_LEVEL_ZERO_BACKEND>
+  $<$<BOOL:${WITH_OPENCL_BACKEND}>:WITH_OPENCL_BACKEND>
+  $<$<BOOL:${WITH_CPU_BACKEND}>:WITH_CPU_BACKEND>
+)
+
 target_compile_options(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
 target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} acpp-common Threads::Threads)
 

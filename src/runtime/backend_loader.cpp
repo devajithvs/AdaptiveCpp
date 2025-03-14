@@ -14,8 +14,21 @@
 #include "hipSYCL/common/debug.hpp"
 #include "hipSYCL/common/config.hpp"
 #include "hipSYCL/runtime/device_id.hpp"
-#include "hipSYCL/runtime/cuda/cuda_backend.hpp"
+
+// We always need a CPU backend
 #include "hipSYCL/runtime/omp/omp_backend.hpp"
+#ifdef WITH_CUDA_BACKEND
+#include "hipSYCL/runtime/cuda/cuda_backend.hpp"
+#endif
+#ifdef WITH_ROCM_BACKEND
+#include "hipSYCL/runtime/hip/hip_backend.hpp"
+#endif
+#ifdef WITH_LEVEL_ZERO_BACKEND
+#include "hipSYCL/runtime/ze/ze_backend.hpp"
+#endif
+// #ifdef WITH_OPENCL_BACKEND
+// #include "hipSYCL/runtime/ocl/ocl_backend.hpp"
+// #endif
 
 #include <cassert>
 
@@ -31,14 +44,6 @@ namespace fs = HIPSYCL_CXX_FILESYSTEM_NAMESPACE;
 namespace {
 
 using namespace hipsycl::rt::detail;
-
-hipsycl::rt::backend *cuda_backend_factory() {
-  return new hipsycl::rt::cuda_backend();
-}
-
-hipsycl::rt::backend *omp_backend_factory() {
-  return new hipsycl::rt::omp_backend();
-}
 
 hipsycl::rt::backend *create_backend(void *plugin_handle) {
   assert(plugin_handle);
@@ -80,15 +85,39 @@ namespace hipsycl {
 namespace rt {
 
 void backend_loader::query_backends() {
+
   if(is_plugin_active("omp")) {
-    _handles.push_back({"omp", reinterpret_cast<void*>(&omp_backend_factory)});
+    _handles.push_back({"omp", nullptr});
     HIPSYCL_DEBUG_INFO << "backend_loader: Successfully opened plugin: " << "omp\n";
   }
 
+#ifdef WITH_CUDA_BACKEND
   if(is_plugin_active("cuda")) {
-    _handles.push_back({"cuda", reinterpret_cast<void*>(&cuda_backend_factory)});
+    _handles.push_back({"cuda", nullptr});
     HIPSYCL_DEBUG_INFO << "backend_loader: Successfully opened plugin: " << "cuda\n";
   }
+#endif
+
+#ifdef WITH_ROCM_BACKEND
+  if(is_plugin_active("hip")) {
+    _handles.push_back({"hip", nullptr});
+    HIPSYCL_DEBUG_INFO << "backend_loader: Successfully opened plugin: " << "hip\n";
+  }#include "hipSYCL/runtime/hip/hip_backend.hpp"
+#endif
+
+#ifdef WITH_LEVEL_ZERO_BACKEND
+  if(is_plugin_active("ze")) {
+    _handles.push_back({"ze", nullptr});
+    HIPSYCL_DEBUG_INFO << "backend_loader: Successfully opened plugin: " << "ze\n";
+  }
+#endif
+
+// #ifdef WITH_OPENCL_BACKEND
+//   if(is_plugin_active("ocl")) {
+//     _handles.push_back({"ocl", nullptr});
+//     HIPSYCL_DEBUG_INFO << "backend_loader: Successfully opened plugin: " << "ocl\n";
+//   }
+// #endif
 
 }
 
@@ -117,10 +146,29 @@ bool backend_loader::has_backend(const std::string &name) const {
 backend *backend_loader::create(std::size_t index) const {
   assert(index < _handles.size());
   auto backend_name = _handles[index].first;
-  if (backend_name == "cuda")
-    return new hipsycl::rt::cuda_backend();
   if (backend_name == "omp")
     return new hipsycl::rt::omp_backend();
+
+#ifdef WITH_CUDA_BACKEND
+  if (backend_name == "cuda")
+    return new hipsycl::rt::cuda_backend();
+#endif
+
+#ifdef WITH_ROCM_BACKEND
+  if (backend_name == "hip")
+    return new hipsycl::rt::hip_backend();
+#endif
+
+#ifdef WITH_LEVEL_ZERO_BACKEND
+  if (backend_name == "ze")
+    return new hipsycl::rt::ze_backend();
+#endif
+
+// #ifdef WITH_OPENCL_BACKEND
+//   if (backend_name == "ocl")
+//     return new hipsycl::rt::ocl_backend();
+// #endif
+
   return nullptr;
 }
 
