@@ -173,7 +173,6 @@ select_executor(runtime *rt, dag_node_ptr node, operation *op) {
         ->get_executor();
   }
 
-
   backend_id executor_backend; device_id preferred_device;
   if (op->has_preferred_backend(executor_backend, preferred_device)) {
     // If we want an executor from a different backend, we may need to pass

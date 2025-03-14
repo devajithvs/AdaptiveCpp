@@ -22,13 +22,6 @@ set(HIPSYCL_RT_EXTRA_LINKER_FLAGS ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} ${HIPSYCL_STD
 
 set(CMAKE_INSTALL_RPATH ${base} ${base}/hipSYCL)
 
-find_package(CUDA REQUIRED)
-if (CUDA_FOUND)
-    message(STATUS "CUDA found: ${CUDA_TOOLKIT_ROOT_DIR}")
-    message(STATUS "CUDA libraries: ${CUDA_LIBS}")
-endif()
-set(WITH_SSCP_COMPILER ON)
-
 add_library(acpp-rt STATIC
   allocator.cpp
   allocation_tracker.cpp
@@ -109,10 +102,6 @@ install(TARGETS acpp-rt
 
 set(CMAKE_INSTALL_RPATH ${base}/../ ${base}/llvm-to-backend)
 
-SET(WITH_CUDA_BACKEND ON)
-
-
-
 if(WITH_CUDA_BACKEND)
   add_library(rt-backend-cuda STATIC
     cuda/cuda_event.cpp
@@ -129,9 +118,6 @@ if(WITH_CUDA_BACKEND)
     ${HIPSYCL_SOURCE_DIR}/include
     ${CUDA_TOOLKIT_ROOT_DIR}/include)
   
-  message("With CUDA backend ${WITH_CUDA_BACKEND}")
-  message("With CUDA backend ${CUDA_TOOLKIT_ROOT_DIR}")
-  
   target_link_libraries(rt-backend-cuda PRIVATE acpp-rt ${CUDA_LIBS})
 
   target_compile_options(rt-backend-cuda PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
@@ -146,15 +132,14 @@ if(WITH_CUDA_BACKEND)
     set_property(TARGET rt-backend-cuda PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
+  target_link_libraries(acpp-rt PRIVATE rt-backend-cuda)
+
   install(TARGETS rt-backend-cuda
         EXPORT ClingTargets
         RUNTIME DESTINATION bin/hipSYCL
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
 endif()
-
-target_link_libraries(acpp-rt PRIVATE rt-backend-cuda)
-
 
 if(WITH_ROCM_BACKEND)
   set(ENABLE_ROCM_UNIFIED_MEMORY_API ON CACHE BOOL "Utilize unified memory API in ROCm. Older ROCm versions may not support this.")
@@ -289,7 +274,7 @@ if(WITH_OPENCL_BACKEND)
   endif()
 
   install(TARGETS rt-backend-ocl
-  EXPORT ClingTargets
+        EXPORT ClingTargets
         LIBRARY DESTINATION lib/hipSYCL
         ARCHIVE DESTINATION lib/hipSYCL)
 endif()

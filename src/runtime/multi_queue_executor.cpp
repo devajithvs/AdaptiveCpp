@@ -101,6 +101,7 @@ multi_queue_executor::multi_queue_executor(
     : _backend{b.get_unique_backend_id()} {
   std::size_t num_devices = b.get_hardware_manager()->get_num_devices();
 
+
   _device_data.resize(num_devices);
 
   for (std::size_t dev = 0; dev < num_devices; ++dev) {

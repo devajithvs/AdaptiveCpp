@@ -250,6 +250,7 @@ hcf_cache& hcf_cache::get() {
 }
 
 hcf_object_id hcf_cache::register_hcf_object(const common::hcf_container &obj) {
+
   std::lock_guard<std::mutex> lock{_mutex};
 
   if (!obj.root_node()->has_key("object-id")) {
