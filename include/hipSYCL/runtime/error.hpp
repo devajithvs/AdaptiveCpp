@@ -180,12 +180,12 @@ inline void print_result(const result& res, bool warn_only = false){
   
   if(!res.is_success()) {
     if(!warn_only) { 
-      HIPSYCL_DEBUG_ERROR << sstr.str() << std::endl;
+      HIPSYCL_DEBUG_ERROR << sstr.str() << "\n";
     } else {
-      HIPSYCL_DEBUG_WARNING << sstr.str() << std::endl;
+      HIPSYCL_DEBUG_WARNING << sstr.str() << "\n";
     }
   } else {
-    HIPSYCL_DEBUG_INFO << sstr.str() << std::endl;
+    HIPSYCL_DEBUG_INFO << sstr.str() << "\n";
   }
 }
 
