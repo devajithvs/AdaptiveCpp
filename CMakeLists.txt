@@ -410,6 +410,7 @@ set(ACPP_FILESYSTEM_SEARCH_OPTIONS "Final;Experimental;Boost" CACHE STRING "Whic
 ## Do not define any variables that might be used by build
 ## targets below this line.
 ##########################################################
+include_directories(${PROJECT_BINARY_DIR}/include)
 add_subdirectory(src)
 
 set(DEFAULT_WIN32_CUDA_LINK_LINE "-L$HIPSYCL_CUDA_LIB_PATH -lcudart")
@@ -687,11 +688,6 @@ install(FILES
   DESTINATION ${HIPSYCL_INSTALL_CMAKE_DIR}
 )
 
-install(EXPORT install_exports
-  FILE "hipsycl-targets.cmake"
-  NAMESPACE hipSYCL::
-  DESTINATION ${HIPSYCL_INSTALL_CMAKE_DIR}
-)
 
 mark_as_advanced(
   HIPSYCL_INSTALL_CMAKE_DIR
@@ -735,12 +731,6 @@ install(FILES
   DESTINATION ${OPENSYCL_INSTALL_CMAKE_DIR}
 )
 
-install(EXPORT install_exports
-  FILE "opensycl-targets.cmake"
-  NAMESPACE OpenSYCL::
-  DESTINATION ${OPENSYCL_INSTALL_CMAKE_DIR}
-)
-
 mark_as_advanced(
   OPENSYCL_INSTALL_CMAKE_DIR
 )
@@ -780,12 +770,6 @@ configure_package_config_file(
 install(FILES
   ${PROJECT_BINARY_DIR}/adaptivecpp-config.cmake
   ${PROJECT_BINARY_DIR}/adaptivecpp-config-version.cmake
-  DESTINATION ${ADAPTIVECPP_INSTALL_CMAKE_DIR}
-)
-
-install(EXPORT install_exports
-  FILE "adaptivecpp-targets.cmake"
-  NAMESPACE AdaptiveCpp::
   DESTINATION ${ADAPTIVECPP_INSTALL_CMAKE_DIR}
 )
 
