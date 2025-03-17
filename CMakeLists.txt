@@ -273,13 +273,13 @@ if(WITH_OPENCL_BACKEND OR WITH_LEVEL_ZERO_BACKEND)
 endif()
 
 if(BUILD_CLANG_PLUGIN)
-  # set(LLVM_DIR_OLD ${LLVM_DIR})
-  # find_package(LLVM CONFIG)
-  # if(LLVM_DIR_OLD AND NOT ("${LLVM_DIR_OLD}" STREQUAL "${LLVM_DIR}"))
-  #   message(WARNING "Could not find LLVM in the requested location LLVM_DIR=${LLVM_DIR_OLD}; using ${LLVM_DIR}.")
-  # endif()
-  # message(STATUS "Building AdaptiveCpp against LLVM configured from ${LLVM_DIR}")
-  #find_package(Clang REQUIRED)
+  set(LLVM_DIR_OLD ${LLVM_DIR})
+  find_package(LLVM CONFIG)
+  if(LLVM_DIR_OLD AND NOT ("${LLVM_DIR_OLD}" STREQUAL "${LLVM_DIR}"))
+    message(WARNING "Could not find LLVM in the requested location LLVM_DIR=${LLVM_DIR_OLD}; using ${LLVM_DIR}.")
+  endif()
+  message(STATUS "Building AdaptiveCpp against LLVM configured from ${LLVM_DIR}")
+  # find_package(Clang REQUIRED)
 
   # find_program(CLANG_EXECUTABLE_PATH NAMES clang++-${LLVM_VERSION_MAJOR} clang++-${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR} clang++ HINTS ${LLVM_TOOLS_BINARY_DIR} NO_DEFAULT_PATH CACHE STRING)
   # if(CLANG_EXECUTABLE_PATH MATCHES "-NOTFOUND")
@@ -288,14 +288,14 @@ if(BUILD_CLANG_PLUGIN)
   #     message(SEND_ERROR "Could not find clang executable")
   #   endif()
   # endif()
-  # if(WIN32)
-  #   # plugins link agains clang.exe and not clang++.exe, thus using clang++ would result
-  #   # in symbol clashes and therefore the plugin not loading.
-  #   # on Windows it seems to be fine, as long as clang is able to deduce the language
-  #   # from the file extension, as the msvcrt is linked explicitly anyways.
-  #   string(REPLACE "clang++.exe" "clang.exe" CLANG_EXECUTABLE_PATH ${CLANG_EXECUTABLE_PATH})
-  # endif()
-  # message(STATUS "Selecting clang: ${CLANG_EXECUTABLE_PATH}")
+  if(WIN32)
+    # plugins link agains clang.exe and not clang++.exe, thus using clang++ would result
+    # in symbol clashes and therefore the plugin not loading.
+    # on Windows it seems to be fine, as long as clang is able to deduce the language
+    # from the file extension, as the msvcrt is linked explicitly anyways.
+    string(REPLACE "clang++.exe" "clang.exe" CLANG_EXECUTABLE_PATH ${CLANG_EXECUTABLE_PATH})
+  endif()
+  message(STATUS "Selecting clang: ${CLANG_EXECUTABLE_PATH}")
 
   get_filename_component(LLVM_BIN_DIR "${CLANG_EXECUTABLE_PATH}" DIRECTORY)
   get_filename_component(LLVM_PREFIX_DIR "${LLVM_BIN_DIR}" DIRECTORY)
