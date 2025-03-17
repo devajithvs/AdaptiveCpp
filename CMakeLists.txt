@@ -100,10 +100,6 @@ endif()
 
 find_package(Boost COMPONENTS context fiber )
 
-if(NOT Boost_FOUND)
-  message(FATAL_ERROR "Please provide the path to the root directory of the boost installation using the -DBOOST_ROOT option")
-endif()
-
 # Check for CUDA/ROCm and clang
 list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake/")
 find_package(CUDA QUIET)
