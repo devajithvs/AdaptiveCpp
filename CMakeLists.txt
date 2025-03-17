@@ -275,7 +275,14 @@ endif()
 if(BUILD_CLANG_PLUGIN)
   set(LLVM_DIR "${CMAKE_BINARY_DIR}/interpreter/llvm-project/llvm/lib/cmake/llvm")
   set(LLVM_DIR_OLD ${LLVM_DIR})
-  message(WARNING "Can find LLVM in the requested location using ${LLVM_DIR}.  LLVM_DIR=${LLVM_DIR_OLD}")
+  message(WARNING "set(LLVM_INCLUDE_DIRS ${LLVM_DIR}/include)")
+
+  if(NOT LLVM_INCLUDE_DIRS)
+    message(WARNING "LLVM_INCLUDE_DIRS is not set correctly. Using ${LLVM_DIR}/include")
+    set(LLVM_INCLUDE_DIRS "${LLVM_DIR}/include")
+  endif()
+
+  include_directories(${LLVM_INCLUDE_DIRS})
 
   find_package(LLVM CONFIG)
   if(LLVM_DIR_OLD AND NOT ("${LLVM_DIR_OLD}" STREQUAL "${LLVM_DIR}"))
