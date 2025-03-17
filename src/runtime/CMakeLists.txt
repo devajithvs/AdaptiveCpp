@@ -110,6 +110,7 @@ install(TARGETS acpp-rt
 
 set(CMAKE_INSTALL_RPATH ${base}/../ ${base}/llvm-to-backend)
 
+set (WITH_CUDA_BACKEND OFF)
 if(WITH_CUDA_BACKEND)
   add_library(rt-backend-cuda STATIC
     cuda/cuda_event.cpp

@@ -278,8 +278,10 @@ if(BUILD_CLANG_PLUGIN)
   message(WARNING "set(LLVM_INCLUDE_DIRS ${LLVM_DIR}/include)")
 
   if(NOT LLVM_INCLUDE_DIRS)
-    message(WARNING "LLVM_INCLUDE_DIRS is not set correctly. Using ${LLVM_DIR}/include")
-    set(LLVM_INCLUDE_DIRS "${LLVM_DIR}/include")
+  set(LLVM_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/interpreter/llvm-project/llvm/include
+    ${CMAKE_BINARY_DIR}/interpreter/llvm-project/llvm/include
+    CACHE STRING "LLVM include directories."
+  )
   endif()
 
   include_directories(${LLVM_INCLUDE_DIRS})
