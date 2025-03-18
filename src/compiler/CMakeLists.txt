@@ -120,7 +120,8 @@ function(configure_target)
   if(NOT ${LLVM_ENABLE_RTTI})
     target_compile_options(${target} PRIVATE -fno-rtti)
   endif()
-
+  
+  message(WARNING "target_link_libraries(${target} ${LLVM_LIBS})")
   target_link_libraries(${target}
     ${LLVM_LIBS})
 
