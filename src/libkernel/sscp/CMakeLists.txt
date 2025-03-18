@@ -60,7 +60,7 @@ function(libkernel_generate_bitcode_target)
   add_custom_command(
     OUTPUT ${linked_output}
     COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-link -o=${linked_output} ${output_files}
-    DEPENDS llvm-link ${output_files}
+    DEPENDS clang llvm-link ${output_files}
   )
 
   install(FILES ${linked_output} DESTINATION lib/hipSYCL/bitcode)
