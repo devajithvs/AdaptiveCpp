@@ -75,7 +75,6 @@ endif()
 
 project(hipSYCL VERSION ${ACPP_VERSION_MAJOR}.${ACPP_VERSION_MINOR}.${ACPP_VERSION_PATCH})
 
-
 set(HIPSYCL_SOURCE_DIR ${PROJECT_SOURCE_DIR})
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -98,10 +97,12 @@ if (NOT ${BOOST_ROOT} STREQUAL "")
   set(ENV{BOOST_ROOT} ${BOOST_ROOT})
 endif()
 
-find_package(Boost COMPONENTS context fiber )
+if(NOT HIPSYCL_NO_FIBERS)
+  find_package(Boost COMPONENTS context fiber )
 
-if(NOT Boost_FOUND)
-  message(FATAL_ERROR "Please provide the path to the root directory of the boost installation using the -DBOOST_ROOT option")
+  if(NOT Boost_FOUND)
+    message(FATAL_ERROR "Please provide the path to the root directory of the boost installation using the -DBOOST_ROOT option")
+  endif()
 endif()
 
 # Check for CUDA/ROCm and clang
@@ -383,17 +384,19 @@ else()
   set(ACPP_CONFIG_FILE_INSTALL_DIR etc/AdaptiveCpp)
 endif()
 
-if(Boost_FIBER_LIBRARY_DEBUG)
-  get_filename_component(Boost_LIBRARY_DIR "${Boost_FIBER_LIBRARY_DEBUG}" DIRECTORY)
-elseif(Boost_FIBER_LIBRARY_RELEASE)
-  get_filename_component(Boost_LIBRARY_DIR "${Boost_FIBER_LIBRARY_RELEASE}" DIRECTORY)
-else()
-  get_target_property(FIBER_IMPORT_LIBRARY Boost::fiber IMPORTED_LOCATION_DEBUG)
-  if(NOT FIBER_IMPORT_LIBRARY)
-    get_target_property(FIBER_IMPORT_LIBRARY Boost::fiber IMPORTED_LOCATION_RELEASE)
+if(NOT HIPSYCL_NO_FIBERS)
+  if(Boost_FIBER_LIBRARY_DEBUG)
+    get_filename_component(Boost_LIBRARY_DIR "${Boost_FIBER_LIBRARY_DEBUG}" DIRECTORY)
+  elseif(Boost_FIBER_LIBRARY_RELEASE)
+    get_filename_component(Boost_LIBRARY_DIR "${Boost_FIBER_LIBRARY_RELEASE}" DIRECTORY)
+  else()
+    get_target_property(FIBER_IMPORT_LIBRARY Boost::fiber IMPORTED_LOCATION_DEBUG)
+    if(NOT FIBER_IMPORT_LIBRARY)
+      get_target_property(FIBER_IMPORT_LIBRARY Boost::fiber IMPORTED_LOCATION_RELEASE)
+    endif()
+    get_filename_component(Boost_LIBRARY_DIR "${FIBER_IMPORT_LIBRARY}" DIRECTORY)
+    get_target_property(Boost_INCLUDE_DIR Boost::fiber INTERFACE_INCLUDE_DIRECTORIES)
   endif()
-  get_filename_component(Boost_LIBRARY_DIR "${FIBER_IMPORT_LIBRARY}" DIRECTORY)
-  get_target_property(Boost_INCLUDE_DIR Boost::fiber INTERFACE_INCLUDE_DIRECTORIES)
 endif()
 
 if(APPLE)
