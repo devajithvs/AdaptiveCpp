@@ -101,7 +101,7 @@ endif()
 find_package(Boost COMPONENTS context fiber )
 
 if(NOT Boost_FOUND)
-  message(FATAL_ERROR "Please provide the path to the root directory of the boost installation using the -DBOOST_ROOT option")
+  message(WARNING "Please provide the path to the root directory of the boost installation using the -DBOOST_ROOT option")
 endif()
 
 # Check for CUDA/ROCm and clang
@@ -381,13 +381,6 @@ if(Boost_FIBER_LIBRARY_DEBUG)
   get_filename_component(Boost_LIBRARY_DIR "${Boost_FIBER_LIBRARY_DEBUG}" DIRECTORY)
 elseif(Boost_FIBER_LIBRARY_RELEASE)
   get_filename_component(Boost_LIBRARY_DIR "${Boost_FIBER_LIBRARY_RELEASE}" DIRECTORY)
-else()
-  get_target_property(FIBER_IMPORT_LIBRARY Boost::fiber IMPORTED_LOCATION_DEBUG)
-  if(NOT FIBER_IMPORT_LIBRARY)
-    get_target_property(FIBER_IMPORT_LIBRARY Boost::fiber IMPORTED_LOCATION_RELEASE)
-  endif()
-  get_filename_component(Boost_LIBRARY_DIR "${FIBER_IMPORT_LIBRARY}" DIRECTORY)
-  get_target_property(Boost_INCLUDE_DIR Boost::fiber INTERFACE_INCLUDE_DIRECTORIES)
 endif()
 
 if(APPLE)
