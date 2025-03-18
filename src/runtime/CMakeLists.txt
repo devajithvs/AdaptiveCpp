@@ -22,29 +22,13 @@ set(HIPSYCL_RT_EXTRA_LINKER_FLAGS ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} ${HIPSYCL_STD
 
 set(CMAKE_INSTALL_RPATH ${base} ${base}/hipSYCL)
 
-find_package(CUDA REQUIRED)
-if (CUDA_FOUND)
-    message(STATUS "CUDA found: ${CUDA_TOOLKIT_ROOT_DIR}")
-    message(STATUS "CUDA libraries: ${CUDA_LIBS}")
-endif()
-set(WITH_SSCP_COMPILER ON)
-
+set(WITH_CUDA_BACKEND false)
 add_library(acpp-rt SHARED
-cuda/cuda_event.cpp
-cuda/cuda_event_pool.cpp
-cuda/cuda_queue.cpp
-cuda/cuda_instrumentation.cpp
-cuda/cuda_allocator.cpp
-cuda/cuda_device_manager.cpp
-cuda/cuda_hardware_manager.cpp
-cuda/cuda_backend.cpp
-cuda/cuda_code_object.cpp
-
-omp/omp_allocator.cpp
-omp/omp_backend.cpp
-omp/omp_event.cpp
-omp/omp_hardware_manager.cpp
-omp/omp_queue.cpp
+    omp/omp_allocator.cpp
+    omp/omp_backend.cpp
+    omp/omp_event.cpp
+    omp/omp_hardware_manager.cpp
+    omp/omp_queue.cpp
   allocator.cpp
   allocation_tracker.cpp
   application.cpp
@@ -74,19 +58,6 @@ omp/omp_queue.cpp
   hw_model/memcpy.cpp
   serialization/serialization.cpp)
 
-  message("With CUDA backend ${WITH_CUDA_BACKEND}")
-  message("With CUDA backend ${CUDA_TOOLKIT_ROOT_DIR}")
-  
-  if(WITH_SSCP_COMPILER)
-    target_compile_definitions(acpp-rt PRIVATE -DHIPSYCL_WITH_SSCP_COMPILER)
-    target_link_libraries(acpp-rt PRIVATE llvm-to-ptx)
-  endif()
-
-  if(is_ipo_supported)
-    set_property(TARGET acpp-rt PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-  endif()
-
-
   find_package(OpenMP REQUIRED)
 
 
@@ -103,7 +74,7 @@ if(is_ipo_supported)
 endif()
 
 target_compile_options(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
-target_link_libraries(acpp-rt PRIVATE ${CUDA_LIBS} ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} acpp-common Threads::Threads)
+target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} acpp-common Threads::Threads)
 
 # syclcc already knows about these include directories, but clangd-based tooling does not.
 # Specifying them explicitly ensures that IDEs can resolve all hipSYCL includes correctly.
