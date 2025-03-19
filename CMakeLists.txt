@@ -608,6 +608,26 @@ configure_file(
   ${PROJECT_SOURCE_DIR}/include/hipSYCL/common/config.hpp.in
   ${PROJECT_BINARY_DIR}/include/hipSYCL/common/config.hpp)
 
+# Create an intermediate build location for headers
+set(ADAPTIVECPP_HEADER_DIR ${PROJECT_BINARY_DIR}/AdaptiveCppHeaders)
+file(MAKE_DIRECTORY ${ADAPTIVECPP_HEADER_DIR})
+
+file(COPY ${PROJECT_SOURCE_DIR}/include/CL DESTINATION ${ADAPTIVECPP_HEADER_DIR}/include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp")
+file(COPY ${PROJECT_SOURCE_DIR}/include/SYCL DESTINATION ${ADAPTIVECPP_HEADER_DIR}/include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp")
+
+file(COPY ${PROJECT_SOURCE_DIR}/include/hipSYCL DESTINATION ${ADAPTIVECPP_HEADER_DIR}/include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
+file(COPY ${PROJECT_SOURCE_DIR}/include/hipSYCL/std DESTINATION ${ADAPTIVECPP_HEADER_DIR}/include/AdaptiveCpp/hipSYCL/)
+file(COPY ${PROJECT_BINARY_DIR}/include/hipSYCL/common/config.hpp DESTINATION ${ADAPTIVECPP_HEADER_DIR}/include/AdaptiveCpp/hipSYCL/common/)
+
+# “Second part” – replicate the same pattern
+file(COPY ${PROJECT_SOURCE_DIR}/include/hipSYCL/ DESTINATION ${ADAPTIVECPP_HEADER_DIR}/include/AdaptiveCpp/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
+file(COPY ${PROJECT_SOURCE_DIR}/include/hipSYCL/std/ DESTINATION ${ADAPTIVECPP_HEADER_DIR}/include/AdaptiveCpp/AdaptiveCpp/std/)
+file(COPY ${PROJECT_BINARY_DIR}/include/hipSYCL/common/config.hpp DESTINATION ${ADAPTIVECPP_HEADER_DIR}/include/AdaptiveCpp/AdaptiveCpp/hipSYCL/common/)
+
+if(NOT WIN32)
+  file(COPY ${PROJECT_SOURCE_DIR}/include/SYCL/sycl.hpp DESTINATION ${ADAPTIVECPP_HEADER_DIR}/include/AdaptiveCpp/sycl/)
+endif()
+
 install(DIRECTORY include/CL DESTINATION include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp")
 install(DIRECTORY include/SYCL DESTINATION include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp")
 
