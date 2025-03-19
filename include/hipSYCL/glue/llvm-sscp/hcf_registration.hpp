@@ -11,8 +11,6 @@
 
 #include "s1_ir_constants.hpp"
 #include <cstdlib>
-#include <mutex>
-
 
 #ifndef ACPP_SSCP_HCF_REGISTRATION_HPP
 #define ACPP_SSCP_HCF_REGISTRATION_HPP
@@ -33,19 +31,18 @@ static std::size_t get_local_hcf_id() {
   return __acpp_local_sscp_hcf_object_id;
 }
 
-/// Instead of a static object, define a function to do registration once.
-/// Also schedule unregistration via atexit().
+static void unregister_local_hcf() {
+  __acpp_unregister_hcf(get_local_hcf_id());
+}
+
 inline void ensure_local_sscp_hcf_registered()
 {
-  static std::once_flag flag;
-  std::call_once(flag, []() {
+  static bool hcf_registered = false;
+  if (!hcf_registered) {
     __acpp_register_hcf(get_local_hcf_object(), get_local_hcf_size());
-
-    // Ensure cleanup at program exit
-    std::atexit([](){
-      __acpp_unregister_hcf(get_local_hcf_id());
-    });
-  });
+    std::atexit(unregister_local_hcf);
+    hcf_registered = true;
+  }
 }
 
 }
