@@ -620,6 +620,26 @@ configure_file(
   ${PROJECT_SOURCE_DIR}/include/hipSYCL/common/config.hpp.in
   ${PROJECT_BINARY_DIR}/include/hipSYCL/common/config.hpp)
 
+# Create an intermediate location to store headers so that cling can run SYCL without installing
+# Without this, we can only use the headers when installed
+file(MAKE_DIRECTORY ${ADAPTIVE_CPP_HEADER_BUILD_PATH})
+
+file(COPY ${PROJECT_SOURCE_DIR}/include/CL DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/ FILES_MATCHING PATTERN "*.hpp")
+file(COPY ${PROJECT_SOURCE_DIR}/include/SYCL DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/ FILES_MATCHING PATTERN "*.hpp")
+
+file(COPY ${PROJECT_SOURCE_DIR}/include/hipSYCL DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/ FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
+file(COPY ${PROJECT_SOURCE_DIR}/include/hipSYCL/std DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/hipSYCL/)
+file(COPY ${PROJECT_BINARY_DIR}/include/hipSYCL/common/config.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/hipSYCL/common/)
+
+# “Second part” – replicate the same pattern
+file(COPY ${PROJECT_SOURCE_DIR}/include/hipSYCL/ DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
+file(COPY ${PROJECT_SOURCE_DIR}/include/hipSYCL/std/ DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/std/)
+file(COPY ${PROJECT_BINARY_DIR}/include/hipSYCL/common/config.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/hipSYCL/common/)
+
+if(NOT WIN32)
+  file(COPY ${PROJECT_SOURCE_DIR}/include/SYCL/sycl.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/sycl/)
+endif()
+
 install(DIRECTORY include/CL DESTINATION include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp")
 install(DIRECTORY include/SYCL DESTINATION include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp")
 
