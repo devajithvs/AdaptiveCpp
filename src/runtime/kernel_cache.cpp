@@ -264,7 +264,7 @@ hcf_object_id hcf_cache::register_hcf_object(const common::hcf_container &obj) {
   HIPSYCL_DEBUG_INFO << "hcf_cache: Registering HCF object " << id << "..." << std::endl;
 
   if (_hcf_objects.count(id) > 0) {
-    HIPSYCL_DEBUG_ERROR
+    HIPSYCL_DEBUG_INFO
         << "hcf_cache: Detected hcf object id collision " << id
         << ", this should not happen. Some kernels might be unavailable."
         << std::endl;
