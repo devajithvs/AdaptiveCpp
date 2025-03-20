@@ -276,7 +276,7 @@ if(WITH_OPENCL_BACKEND OR WITH_LEVEL_ZERO_BACKEND)
   endif()
 endif()
 
-if(BUILD_CLANG_PLUGIN)
+if(0) # We've already handled all the LLVM parts from the CLING side
   set(LLVM_DIR_OLD ${LLVM_DIR})
   find_package(LLVM CONFIG)
   if(LLVM_DIR_OLD AND NOT ("${LLVM_DIR_OLD}" STREQUAL "${LLVM_DIR}"))
@@ -403,6 +403,7 @@ set(ACPP_FILESYSTEM_SEARCH_OPTIONS "Final;Experimental;Boost" CACHE STRING "Whic
 ## Do not define any variables that might be used by build
 ## targets below this line.
 ##########################################################
+include_directories(${PROJECT_BINARY_DIR}/include)
 add_subdirectory(src)
 
 set(DEFAULT_WIN32_CUDA_LINK_LINE "-L$HIPSYCL_CUDA_LIB_PATH -lcudart")
@@ -700,11 +701,6 @@ install(FILES
   DESTINATION ${HIPSYCL_INSTALL_CMAKE_DIR}
 )
 
-install(EXPORT install_exports
-  FILE "hipsycl-targets.cmake"
-  NAMESPACE hipSYCL::
-  DESTINATION ${HIPSYCL_INSTALL_CMAKE_DIR}
-)
 
 mark_as_advanced(
   HIPSYCL_INSTALL_CMAKE_DIR
@@ -748,12 +744,6 @@ install(FILES
   DESTINATION ${OPENSYCL_INSTALL_CMAKE_DIR}
 )
 
-install(EXPORT install_exports
-  FILE "opensycl-targets.cmake"
-  NAMESPACE OpenSYCL::
-  DESTINATION ${OPENSYCL_INSTALL_CMAKE_DIR}
-)
-
 mark_as_advanced(
   OPENSYCL_INSTALL_CMAKE_DIR
 )
@@ -793,12 +783,6 @@ configure_package_config_file(
 install(FILES
   ${PROJECT_BINARY_DIR}/adaptivecpp-config.cmake
   ${PROJECT_BINARY_DIR}/adaptivecpp-config-version.cmake
-  DESTINATION ${ADAPTIVECPP_INSTALL_CMAKE_DIR}
-)
-
-install(EXPORT install_exports
-  FILE "adaptivecpp-targets.cmake"
-  NAMESPACE AdaptiveCpp::
   DESTINATION ${ADAPTIVECPP_INSTALL_CMAKE_DIR}
 )
 
