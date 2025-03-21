@@ -265,7 +265,7 @@ public:
   void register_kernel() {
     // This function is not needed in the current implementation, but it might
     // be useful in the future.
-    std::string name; // = typeid(KernelT).name(); // Cannot use this with -fno-rtti
+    std::string name = typeid(KernelT).name();
     HIPSYCL_DEBUG_INFO << "kernel_cache: Registering kernel " << name << "\n";
   }
 
