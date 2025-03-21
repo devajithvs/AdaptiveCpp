@@ -45,19 +45,6 @@ namespace {
 
 using namespace hipsycl::rt::detail;
 
-hipsycl::rt::backend *create_backend(void *plugin_handle) {
-  assert(plugin_handle);
-
-  if(void *symbol = get_symbol_from_library(plugin_handle, "hipsycl_backend_plugin_create", "backend_loader"))
-  {
-    auto create_backend_func =
-        reinterpret_cast<decltype(&hipsycl_backend_plugin_create)>(symbol);
-
-    return create_backend_func();
-  }
-  return nullptr;
-}
-
 bool is_plugin_active(const std::string& name)
 {
   auto backends_active = hipsycl::rt::application::get_settings().get<hipsycl::rt::setting::visibility_mask>();
