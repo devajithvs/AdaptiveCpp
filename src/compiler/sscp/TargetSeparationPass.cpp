@@ -21,6 +21,7 @@
 #include "hipSYCL/compiler/utils/ProcessFunctionAnnotationsPass.hpp"
 #include "hipSYCL/compiler/utils/LLVMUtils.hpp"
 #include "hipSYCL/common/hcf_container.hpp"
+#include "hipSYCL/runtime/kernel_cache.hpp"
 
 #include <cstddef>
 
@@ -425,6 +426,7 @@ generateHCF(llvm::Module &DeviceModule, std::size_t HcfObjectId,
     }
   }
   
+  hipsycl::rt::hcf_cache::get().register_hcf_object(HcfObject);
 
   return HcfObject.serialize();
 }
