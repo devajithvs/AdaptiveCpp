@@ -198,7 +198,7 @@ public:
 
     for(const auto& symbol_name : names) {
       HIPSYCL_DEBUG_INFO << "hcf_cache: Looking up symbol " << symbol_name
-                         << std::endl;
+                         << "\n";
       auto it = _exported_symbol_providers.find(symbol_name);
       if(it == _exported_symbol_providers.end()) {
         HIPSYCL_DEBUG_INFO << "hcf_cache: (Symbol not found)\n";
@@ -270,7 +270,7 @@ public:
     // This function is not needed in the current implementation, but it might
     // be useful in the future.
     std::string name = typeid(KernelT).name();
-    HIPSYCL_DEBUG_INFO << "kernel_cache: Registering kernel " << name << std::endl;
+    HIPSYCL_DEBUG_INFO << "kernel_cache: Registering kernel " << name << "\n";
   }
 
   /// Retrieve object for provided code object id, or nullptr
@@ -337,7 +337,7 @@ public:
                "optimization process has not yet reached peak performance. You "
                "may want to run the application again until this warning no "
                "longer appears to achieve optimal performance."
-            << std::endl;
+            << "\n";
       }
       persistent_cache_store(id_of_binary, compiled_binary);
     }
