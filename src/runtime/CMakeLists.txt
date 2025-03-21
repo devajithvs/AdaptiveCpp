@@ -227,7 +227,10 @@ if(WITH_OPENCL_BACKEND)
     add_subdirectory(${ocl-headers_SOURCE_DIR} ${ocl-headers_BINARY_DIR} EXCLUDE_FROM_ALL)
   endif()
   add_library(ocl-headers INTERFACE)
-  target_include_directories(ocl-headers INTERFACE ${ocl-headers_SOURCE_DIR})
+  target_include_directories(ocl-headers INTERFACE
+    $<BUILD_INTERFACE:${ocl-headers_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include/ocl>
+  )
   
   FetchContent_Declare(ocl-cxx-headers
     GIT_REPOSITORY https://github.com/KhronosGroup/OpenCL-CLHPP
@@ -241,7 +244,10 @@ if(WITH_OPENCL_BACKEND)
     add_subdirectory(${ocl-cxx-headers_SOURCE_DIR} ${ocl-cxx-headers_BINARY_DIR} EXCLUDE_FROM_ALL)
   endif()
   add_library(ocl-cxx-headers INTERFACE)
-  target_include_directories(ocl-cxx-headers INTERFACE ${ocl-cxx-headers_SOURCE_DIR}/include)
+  target_include_directories(ocl-cxx-headers INTERFACE
+    $<BUILD_INTERFACE:${ocl-cxx-headers_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/ocl-cxx>
+  )
 
   add_library(rt-backend-ocl SHARED
     ocl/ocl_backend.cpp
