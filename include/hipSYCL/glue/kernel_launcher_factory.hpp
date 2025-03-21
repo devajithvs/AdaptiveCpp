@@ -20,6 +20,7 @@
 #include "hipSYCL/runtime/kernel_launcher.hpp"
 #include "hipSYCL/glue/kernel_names.hpp"
 #include "hipSYCL/common/small_vector.hpp"
+#include "hipSYCL/glue/llvm-sscp/sscp_kernel_launcher.hpp"
 
 #if defined(__ACPP_ENABLE_HIP_TARGET__)
 #include "hip/hip_kernel_launcher.hpp"
@@ -52,6 +53,7 @@ make_kernel_launcher(sycl::id<Dim> offset, sycl::range<Dim> local_range,
 
   using name_traits = kernel_name_traits<KernelNameTag, Kernel>;
 
+  hipsycl::glue::sscp::ensure_local_sscp_hcf_registered();
   kernel_launcher_data static_launcher_data;
   common::auto_small_vector<std::unique_ptr<rt::backend_kernel_launcher>>
       launchers;
