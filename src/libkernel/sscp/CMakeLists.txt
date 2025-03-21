@@ -46,7 +46,7 @@ function(libkernel_generate_bitcode_target)
   set(output_files )
   foreach(source ${sources})
     get_filename_component(target_source ${source} NAME_WE)
-    set(output_file ${CMAKE_CURRENT_BINARY_DIR}/libkernel-sscp-${target}-${target_source}.bc)
+    set(output_file ${CMAKE_BINARY_DIR}/lib/hipSYCL/bitcode/libkernel-sscp-${target}-${target_source}.bc)
     list(APPEND output_files ${output_file})
     
     libkernel_generate_bitcode_library(
@@ -56,17 +56,17 @@ function(libkernel_generate_bitcode_target)
       ADDITIONAL_ARGS ${additional})
   endforeach()
 
-  set(linked_output ${CMAKE_CURRENT_BINARY_DIR}/libkernel-sscp-${target}-full.bc)
+  set(linked_output ${CMAKE_BINARY_DIR}/lib/hipSYCL/bitcode/libkernel-sscp-${target}-full.bc)
   add_custom_command(
     OUTPUT ${linked_output}
     COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-link -o=${linked_output} ${output_files}
-    DEPENDS ${output_files}
+    DEPENDS clang llvm-link ${output_files}
   )
 
   install(FILES ${linked_output} DESTINATION lib/hipSYCL/bitcode)
 
   add_custom_target(libkernel-sscp-${target} ALL
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/lib/hipSYCL/bitcode
     DEPENDS ${linked_output}
   )
 
