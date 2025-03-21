@@ -223,9 +223,15 @@ if(WITH_OPENCL_BACKEND)
   endif()
 endif()
 
-set(WITH_CUDA_BACKEND ${CUDA_FOUND} CACHE BOOL "Build AdaptiveCpp support for NVIDIA GPUs with CUDA")
-set(WITH_ROCM_BACKEND ${ROCM_FOUND} CACHE BOOL "Build AdaptiveCpp support for AMD GPUs with ROCm")
-set(WITH_OPENCL_BACKEND ${OpenCL_FOUND} CACHE BOOL "Build AdaptiveCpp support for OpenCL SPIR-V devices supporting USM")
+if(NOT DEFINED WITH_CUDA_BACKEND)
+  set(WITH_CUDA_BACKEND ${CUDA_FOUND} CACHE BOOL "Build AdaptiveCpp support for NVIDIA GPUs with CUDA")
+endif()
+if(NOT DEFINED WITH_ROCM_BACKEND)
+  set(WITH_ROCM_BACKEND ${ROCM_FOUND} CACHE BOOL "Build AdaptiveCpp support for AMD GPUs with ROCm")
+endif()
+if(NOT DEFINED WITH_OPENCL_BACKEND)
+  set(WITH_OPENCL_BACKEND ${OpenCL_FOUND} CACHE BOOL "Build AdaptiveCpp support for OpenCL SPIR-V devices supporting USM")
+endif()
 
 set(WITH_CPU_BACKEND true)
 
