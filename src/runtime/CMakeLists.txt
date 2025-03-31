@@ -22,6 +22,8 @@ set(HIPSYCL_RT_EXTRA_LINKER_FLAGS ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} ${HIPSYCL_STD
 
 set(CMAKE_INSTALL_RPATH ${base} ${base}/hipSYCL)
 
+set(CMAKE_CXX_VISIBILITY_PRESET default)
+set(CMAKE_C_VISIBILITY_PRESET default)
 add_library(acpp-rt STATIC
   allocator.cpp
   allocation_tracker.cpp
