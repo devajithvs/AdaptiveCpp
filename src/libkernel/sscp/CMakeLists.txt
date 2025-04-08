@@ -43,6 +43,10 @@ function(libkernel_generate_bitcode_target)
   set(triple ${GENERATE_BITCODE_TARGET_TRIPLE})
   set(additional ${GENERATE_BITCODE_TARGET_ADDITIONAL_ARGS})
 
+  if("${target}" STREQUAL "ptx")
+    list(APPEND additional -Xclang -target-feature -Xclang +ptx60)
+  endif()
+
   set(output_files )
   foreach(source ${sources})
     get_filename_component(target_source ${source} NAME_WE)

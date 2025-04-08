@@ -144,7 +144,7 @@ llvm::Function *makeWrapperFunction(llvm::Function &F, std::int64_t DynamicLocal
 #if HAS_TYPED_PTR // otherwise, IS_OPAQUE is always true
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-      auto GEP = Bld.CreateInBoundsGEP(UserArgsT->getNonOpaquePointerElementType(), ArgArray,
+      auto GEP = Bld.CreateInBoundsGEP(UserArgsT->getPointerElementType(), ArgArray,
                                        llvm::ArrayRef<llvm::Value *>{Bld.getInt32(I)});
 #pragma GCC diagnostic pop
       auto CastedPtr = Bld.CreatePointerCast(Bld.CreateLoad(VoidPtrT, GEP),

@@ -74,11 +74,11 @@ void registerCBSPipeline(llvm::ModulePassManager &MPM, OptLevel Opt, bool IsSscp
     MPM.addPass(llvm::IPSCCPPass{});
     FPM.addPass(llvm::InstCombinePass{});
 
-#if (LLVM_VERSION_MAJOR < 16) || defined(IS_ROCM_CLANG_VERSION_5_5_0)
-    FPM.addPass(llvm::SROAPass{});
-#else
-    FPM.addPass(llvm::SROAPass{llvm::SROAOptions::ModifyCFG});
-#endif
+// #if (LLVM_VERSION_MAJOR < 16) || defined(IS_ROCM_CLANG_VERSION_5_5_0)
+//     FPM.addPass(llvm::SROAPass{});
+// #else
+//     FPM.addPass(llvm::SROAPass{llvm::SROAOptions::ModifyCFG});
+// #endif
 
     FPM.addPass(llvm::SimplifyCFGPass{});
   }

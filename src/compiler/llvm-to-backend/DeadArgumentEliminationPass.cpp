@@ -45,10 +45,10 @@ void removeUnusedFunctionParameters(llvm::Function *F, llvm::Module &M,
   if (auto *NewF = llvm::dyn_cast<llvm::Function>(
         M.getOrInsertFunction(FunctionName, NewFType).getCallee())) {
     
-    for(auto Attr : F->getAttributes().getFnAttrs())
+    for(auto Attr : F->getAttributes().getFnAttributes())
       NewF->addFnAttr(Attr);
     for(int i = 0; i < OriginalParameterIndex.size(); ++i){
-      for (auto Attr : F->getAttributes().getParamAttrs(OriginalParameterIndex[i]))
+      for (auto Attr : F->getAttributes().getParamAttributes(OriginalParameterIndex[i]))
         NewF->addParamAttr(i, Attr);
     }
     NewF->setLinkage(F->getLinkage());

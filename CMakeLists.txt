@@ -717,11 +717,11 @@ install(FILES
   DESTINATION ${HIPSYCL_INSTALL_CMAKE_DIR}
 )
 
-install(EXPORT install_exports
-  FILE "hipsycl-targets.cmake"
-  NAMESPACE hipSYCL::
-  DESTINATION ${HIPSYCL_INSTALL_CMAKE_DIR}
-)
+# install(EXPORT install_exports
+#   FILE "hipsycl-targets.cmake"
+#   NAMESPACE hipSYCL::
+#   DESTINATION ${HIPSYCL_INSTALL_CMAKE_DIR}
+# )
 
 mark_as_advanced(
   HIPSYCL_INSTALL_CMAKE_DIR
@@ -765,11 +765,11 @@ install(FILES
   DESTINATION ${OPENSYCL_INSTALL_CMAKE_DIR}
 )
 
-install(EXPORT install_exports
-  FILE "opensycl-targets.cmake"
-  NAMESPACE OpenSYCL::
-  DESTINATION ${OPENSYCL_INSTALL_CMAKE_DIR}
-)
+# install(EXPORT install_exports
+#   FILE "opensycl-targets.cmake"
+#   NAMESPACE OpenSYCL::
+#   DESTINATION ${OPENSYCL_INSTALL_CMAKE_DIR}
+# )
 
 mark_as_advanced(
   OPENSYCL_INSTALL_CMAKE_DIR
@@ -813,11 +813,11 @@ install(FILES
   DESTINATION ${ADAPTIVECPP_INSTALL_CMAKE_DIR}
 )
 
-install(EXPORT install_exports
-  FILE "adaptivecpp-targets.cmake"
-  NAMESPACE AdaptiveCpp::
-  DESTINATION ${ADAPTIVECPP_INSTALL_CMAKE_DIR}
-)
+# install(EXPORT install_exports
+#   FILE "adaptivecpp-targets.cmake"
+#   NAMESPACE AdaptiveCpp::
+#   DESTINATION ${ADAPTIVECPP_INSTALL_CMAKE_DIR}
+# )
 
 mark_as_advanced(
   ADAPTIVECPP_INSTALL_CMAKE_DIR

@@ -158,7 +158,7 @@ void ExpandAggregateArguments(llvm::Module &M, llvm::Function &F,
   llvm::FunctionType *FType = llvm::FunctionType::get(F.getReturnType(), NewArgumentTypes, false);
   if (auto *NewF = llvm::dyn_cast<llvm::Function>(
           M.getOrInsertFunction(FunctionName, FType).getCallee())) {
-    for(auto& Attr : F.getAttributes().getFnAttrs()) {
+    for(auto& Attr : F.getAttributes().getFnAttributes()) {
       NewF->addFnAttr(Attr);
     }
     NewF->setLinkage(OldLinkage);

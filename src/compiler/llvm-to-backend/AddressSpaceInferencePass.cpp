@@ -121,9 +121,9 @@ llvm::PreservedAnalyses AddressSpaceInferencePass::run(llvm::Module &M,
     for(auto& BB : F) {
       for(auto& I : BB) {
         if(auto* AI = llvm::dyn_cast<llvm::AllocaInst>(&I)) {
-          if(AI->getAddressSpace() != AllocaAddrSpace) {
+          if(AI->getType()->getAddressSpace() != AllocaAddrSpace) {
             HIPSYCL_DEBUG_INFO << "AddressSpaceInferencePass: Found alloca in address space "
-                               << AI->getAddressSpace() << " when it should be in AS "
+                               << AI->getType()->getAddressSpace() << " when it should be in AS "
                                << AllocaAddrSpace << ", fixing.\n";
             auto *NewAI = new llvm::AllocaInst{AI->getAllocatedType(), AllocaAddrSpace, "", AI};
             auto* ASCastInst = new llvm::AddrSpaceCastInst{NewAI, AI->getType(), "", AI};
@@ -140,10 +140,13 @@ llvm::PreservedAnalyses AddressSpaceInferencePass::run(llvm::Module &M,
                                                ? llvm::Intrinsic::lifetime_start
                                                : llvm::Intrinsic::lifetime_end;
 
-                  llvm::SmallVector<llvm::Type*> IntrinsicType {NewAI->getType()};
+                  llvm::SmallVector<llvm::Type*, 1> IntrinsicType;
+                  IntrinsicType.push_back(NewAI->getType());
                   llvm::Function *LifetimeIntrinsic =
                       llvm::Intrinsic::getDeclaration(&M, Id, IntrinsicType);
-                  llvm::SmallVector<llvm::Value*> CallArgs{CB->getArgOperand(0), NewAI};
+                  llvm::SmallVector<llvm::Value*, 2> CallArgs;
+                  CallArgs.push_back(CB->getArgOperand(0));
+                  CallArgs.push_back(NewAI);
                   llvm::CallInst::Create(llvm::FunctionCallee(LifetimeIntrinsic), CallArgs, "", CB);
                 }
               }

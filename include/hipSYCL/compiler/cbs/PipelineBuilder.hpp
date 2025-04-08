@@ -21,7 +21,7 @@ class PassManagerBase;
 
 namespace hipsycl::compiler {
 
-using OptLevel = llvm::OptimizationLevel;
+using OptLevel = llvm::PassBuilder::OptimizationLevel;
 
 // build the CBS pipeline for the legacy PM
 void registerCBSPipelineLegacy(llvm::legacy::PassManagerBase &PM);

@@ -32,7 +32,6 @@
 #include <llvm/IR/PassManager.h>
 #include <llvm/IR/GlobalValue.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
-#include <llvm/Passes/OptimizationLevel.h>
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Transforms/Utils/Cloning.h>
@@ -334,10 +333,10 @@ std::unique_ptr<llvm::Module> generateDeviceIR(llvm::Module &M,
 
   DeviceMAM.clear();
   if(!PreoptimizeSSCPKernels) {
-    llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(llvm::OptimizationLevel::O0);
+    llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(llvm::PassBuilder::OptimizationLevel::O0);
     MPM.run(*DeviceModule, DeviceMAM);
   } else {
-    llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(llvm::OptimizationLevel::O3);
+    llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(llvm::PassBuilder::OptimizationLevel::O3);
     MPM.run(*DeviceModule, DeviceMAM);
   }
 
