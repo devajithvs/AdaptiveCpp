@@ -24,7 +24,7 @@ set(CMAKE_INSTALL_RPATH ${base} ${base}/hipSYCL)
 
 set(CMAKE_CXX_VISIBILITY_PRESET default)
 set(CMAKE_C_VISIBILITY_PRESET default)
-add_library(acpp-rt STATIC
+add_library(acpp-rt SHARED
   allocator.cpp
   allocation_tracker.cpp
   application.cpp
@@ -53,14 +53,6 @@ add_library(acpp-rt STATIC
   generic/async_worker.cpp
   hw_model/memcpy.cpp
   serialization/serialization.cpp)
-
-target_compile_definitions(acpp-rt PRIVATE
-  $<$<BOOL:${WITH_CUDA_BACKEND}>:WITH_CUDA_BACKEND>
-  $<$<BOOL:${WITH_ROCM_BACKEND}>:WITH_ROCM_BACKEND>
-  $<$<BOOL:${WITH_LEVEL_ZERO_BACKEND}>:WITH_LEVEL_ZERO_BACKEND>
-  $<$<BOOL:${WITH_OPENCL_BACKEND}>:WITH_OPENCL_BACKEND>
-  $<$<BOOL:${WITH_CPU_BACKEND}>:WITH_CPU_BACKEND>
-)
 
 target_compile_options(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
 target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} acpp-common Threads::Threads)
@@ -104,7 +96,7 @@ if(is_ipo_supported)
 endif()
 
 install(TARGETS acpp-rt
-        EXPORT ClingTargets
+        EXPORT install_exports
         INCLUDES DESTINATION include/AdaptiveCpp
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
@@ -114,7 +106,7 @@ set_property(GLOBAL APPEND PROPERTY CLING_EXPORTS ${ACPP_EXPORTS})
 set(CMAKE_INSTALL_RPATH ${base}/../ ${base}/llvm-to-backend)
 
 if(WITH_CUDA_BACKEND)
-  add_library(rt-backend-cuda STATIC
+  add_library(rt-backend-cuda OBJECT
     cuda/cuda_event.cpp
     cuda/cuda_event_pool.cpp
     cuda/cuda_queue.cpp
@@ -129,31 +121,27 @@ if(WITH_CUDA_BACKEND)
     ${HIPSYCL_SOURCE_DIR}/include
     ${CUDA_TOOLKIT_ROOT_DIR}/include)
   
-  target_link_libraries(rt-backend-cuda PRIVATE acpp-rt ${CUDA_LIBS})
+  target_link_libraries(acpp-rt PRIVATE ${CUDA_LIBS})
 
   target_compile_options(rt-backend-cuda PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
-  target_link_libraries(rt-backend-cuda PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS})
+  target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS})
 
   if(WITH_SSCP_COMPILER)
     target_compile_definitions(rt-backend-cuda PRIVATE -DHIPSYCL_WITH_SSCP_COMPILER)
-    target_link_libraries(rt-backend-cuda PRIVATE llvm-to-ptx)
+    target_link_libraries(acpp-rt PRIVATE llvm-to-ptx)
   endif()
 
   if(is_ipo_supported)
     set_property(TARGET rt-backend-cuda PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
-  target_link_libraries(acpp-rt PRIVATE rt-backend-cuda)
-  install(TARGETS rt-backend-cuda
-        RUNTIME DESTINATION bin/hipSYCL
-        LIBRARY DESTINATION lib/hipSYCL
-        ARCHIVE DESTINATION lib/hipSYCL)
+  target_sources(acpp-rt PRIVATE $<TARGET_OBJECTS:rt-backend-cuda>)
 endif()
 
 if(WITH_ROCM_BACKEND)
   set(ENABLE_ROCM_UNIFIED_MEMORY_API ON CACHE BOOL "Utilize unified memory API in ROCm. Older ROCm versions may not support this.")
 
-  add_library(rt-backend-hip STATIC
+  add_library(rt-backend-hip OBJECT
     hip/hip_event.cpp
     hip/hip_event_pool.cpp
     hip/hip_queue.cpp
@@ -171,34 +159,30 @@ if(WITH_ROCM_BACKEND)
   target_include_directories(rt-backend-hip PRIVATE ${HIPSYCL_SOURCE_DIR}/include)
   if(NOT HIP_FOUND)
     target_include_directories(rt-backend-hip PRIVATE ${ROCM_PATH}/include)
-    target_link_libraries(rt-backend-hip PRIVATE ${ROCM_LIBS})
+    target_link_libraries(acpp-rt PRIVATE ${ROCM_LIBS})
   else()
     # Supress warnings because wrongly set CXX arguments
     target_compile_options(rt-backend-hip PRIVATE -Wno-unused-command-line-argument)
-    target_link_libraries(rt-backend-hip PRIVATE acpp-rt  hip::host)
+    target_link_libraries(acpp-rt PRIVATE hip::host)
   endif()
 
   target_compile_options(rt-backend-hip PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
-  target_link_libraries(rt-backend-hip PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS})
+  target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS})
 
   if(WITH_SSCP_COMPILER)
     target_compile_definitions(rt-backend-hip PRIVATE -DHIPSYCL_WITH_SSCP_COMPILER)
-    target_link_libraries(rt-backend-hip PRIVATE llvm-to-amdgpu)
+    target_link_libraries(acpp-rt PRIVATE llvm-to-amdgpu)
   endif()
 
   if(is_ipo_supported)
     set_property(TARGET rt-backend-hip PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
-  target_link_libraries(acpp-rt PRIVATE rt-backend-hip)
-  install(TARGETS rt-backend-hip
-        RUNTIME DESTINATION bin/hipSYCL
-        LIBRARY DESTINATION lib/hipSYCL
-        ARCHIVE DESTINATION lib/hipSYCL)
+  target_sources(acpp-rt PRIVATE $<TARGET_OBJECTS:rt-backend-hip>)
 endif()
 
 if(WITH_LEVEL_ZERO_BACKEND)
-  add_library(rt-backend-ze STATIC
+  add_library(rt-backend-ze OBJECT
     ze/ze_backend.cpp
     ze/ze_hardware_manager.cpp
     ze/ze_allocator.cpp
@@ -207,24 +191,21 @@ if(WITH_LEVEL_ZERO_BACKEND)
     ze/ze_code_object.cpp)
   
   target_include_directories(rt-backend-ze PRIVATE ${HIPSYCL_SOURCE_DIR}/include)
-  target_link_libraries(rt-backend-ze PRIVATE acpp-rt -lze_loader)
+  target_link_libraries(acpp-rt PRIVATE -lze_loader)
 
   target_compile_options(rt-backend-ze PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
-  target_link_libraries(rt-backend-ze PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS})
+  target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS})
 
   if(WITH_SSCP_COMPILER)
     target_compile_definitions(rt-backend-ze PRIVATE -DHIPSYCL_WITH_SSCP_COMPILER)
-    target_link_libraries(rt-backend-ze PRIVATE llvm-to-spirv)
+    target_link_libraries(acpp-rt PRIVATE llvm-to-spirv)
   endif()
 
   if(is_ipo_supported)
     set_property(TARGET rt-backend-ze PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
-  target_link_libraries(acpp-rt PRIVATE rt-backend-ze)
-  install(TARGETS rt-backend-ze
-        LIBRARY DESTINATION lib/hipSYCL
-        ARCHIVE DESTINATION lib/hipSYCL)
+  target_sources(acpp-rt PRIVATE $<TARGET_OBJECTS:rt-backend-ze>)
 endif()
 
 if(WITH_OPENCL_BACKEND)
@@ -263,7 +244,7 @@ if(WITH_OPENCL_BACKEND)
     $<INSTALL_INTERFACE:include/ocl-cxx>
   )
 
-  add_library(rt-backend-ocl STATIC
+  add_library(rt-backend-ocl OBJECT
     ocl/ocl_backend.cpp
     ocl/ocl_code_object.cpp
     ocl/ocl_hardware_manager.cpp
@@ -273,29 +254,26 @@ if(WITH_OPENCL_BACKEND)
     ocl/ocl_queue.cpp)
 
   target_include_directories(rt-backend-ocl PRIVATE ${HIPSYCL_SOURCE_DIR}/include)
-  target_link_libraries(rt-backend-ocl PRIVATE acpp-rt ${OpenCL_LIBRARIES} ocl-headers ocl-cxx-headers)
+  target_link_libraries(acpp-rt PRIVATE ${OpenCL_LIBRARIES} ocl-headers ocl-cxx-headers)
 
   target_compile_options(rt-backend-ocl PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
-  target_link_libraries(rt-backend-ocl PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS})
+  target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS})
   target_compile_definitions(rt-backend-ocl PRIVATE -DCL_HPP_TARGET_OPENCL_VERSION=210)
 
   if(WITH_SSCP_COMPILER)
     target_compile_definitions(rt-backend-ocl PRIVATE -DHIPSYCL_WITH_SSCP_COMPILER)
-    target_link_libraries(rt-backend-ocl PRIVATE llvm-to-spirv)
+    target_link_libraries(acpp-rt PRIVATE llvm-to-spirv)
   endif()
 
   if(is_ipo_supported)
     set_property(TARGET rt-backend-ocl PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
-  target_link_libraries(acpp-rt PRIVATE rt-backend-ocl)
-  install(TARGETS rt-backend-ocl
-        LIBRARY DESTINATION lib/hipSYCL
-        ARCHIVE DESTINATION lib/hipSYCL)
+  target_sources(acpp-rt PRIVATE $<TARGET_OBJECTS:rt-backend-ocl>)
 endif()
 
 if(WITH_CPU_BACKEND)
-  add_library(rt-backend-omp STATIC
+  add_library(rt-backend-omp OBJECT
     omp/omp_allocator.cpp
     omp/omp_backend.cpp
     omp/omp_event.cpp
@@ -326,7 +304,7 @@ if(WITH_CPU_BACKEND)
     if(WITH_SSCP_COMPILER)
       target_sources(rt-backend-omp PRIVATE omp/omp_code_object.cpp)
       target_compile_definitions(rt-backend-omp PRIVATE -DHIPSYCL_WITH_SSCP_COMPILER)
-      target_link_libraries(rt-backend-omp PRIVATE llvm-to-host)
+      target_link_libraries(acpp-rt PRIVATE llvm-to-host)
     endif()
 
     if(APPLE)
@@ -346,22 +324,18 @@ if(WITH_CPU_BACKEND)
       ${CMAKE_${LANG}_IMPLICIT_LINK_DIRECTORIES}
       ${LLVM_PREFIX_DIR}/lib
     )
-    target_link_libraries(rt-backend-omp PRIVATE ${hipSYCL_OpenMP_libomp_LIBRARY})
+    target_link_libraries(acpp-rt PRIVATE ${hipSYCL_OpenMP_libomp_LIBRARY})
   endif()
 
-  target_link_libraries(rt-backend-omp PRIVATE acpp-rt  OpenMP::OpenMP_CXX)
+  target_link_libraries(acpp-rt PRIVATE OpenMP::OpenMP_CXX)
 
   target_compile_options(rt-backend-omp PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
-  target_link_libraries(rt-backend-omp PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS})
+  target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS})
 
   if(is_ipo_supported)
     set_property(TARGET rt-backend-omp PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
   endif()
 
-  target_link_libraries(acpp-rt PRIVATE rt-backend-omp)
-  install(TARGETS rt-backend-omp
-      RUNTIME DESTINATION bin/hipSYCL
-      LIBRARY DESTINATION lib/hipSYCL
-      ARCHIVE DESTINATION lib/hipSYCL)
+  target_sources(acpp-rt PRIVATE $<TARGET_OBJECTS:rt-backend-omp>)
 endif()
 
