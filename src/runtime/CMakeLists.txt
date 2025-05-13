@@ -104,11 +104,12 @@ if(is_ipo_supported)
 endif()
 
 install(TARGETS acpp-rt
-        EXPORT install_exports
+        EXPORT ClingTargets
         INCLUDES DESTINATION include/AdaptiveCpp
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
+set_property(GLOBAL APPEND PROPERTY CLING_EXPORTS ${ACPP_EXPORTS})
 
 set(CMAKE_INSTALL_RPATH ${base}/../ ${base}/llvm-to-backend)
 

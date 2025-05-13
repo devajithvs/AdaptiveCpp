@@ -28,7 +28,7 @@ private:
   std::shared_ptr<rt::runtime> _rt;
 };
 
-static persistent_runtime persistent_runtime_object;
+// static persistent_runtime persistent_runtime_object;
 
 }
 }

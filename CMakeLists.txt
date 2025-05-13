@@ -283,7 +283,7 @@ if(WITH_OPENCL_BACKEND OR WITH_LEVEL_ZERO_BACKEND)
   endif()
 endif()
 
-if(0) # We've already handled all the LLVM parts from the CLING side
+if(1) # We've already handled all the LLVM parts from the CLING side
   set(LLVM_DIR_OLD ${LLVM_DIR})
   find_package(LLVM CONFIG)
   if(LLVM_DIR_OLD AND NOT ("${LLVM_DIR_OLD}" STREQUAL "${LLVM_DIR}"))
@@ -315,22 +315,23 @@ if(0) # We've already handled all the LLVM parts from the CLING side
   # includes are not of high enough priority in the include path search order).
   # We identify this path as the one containing __clang_cuda_runtime_wrapper.h,
   # which is a clang-specific header file.
-  find_path(FOUND_CLANG_INCLUDE_PATH __clang_cuda_runtime_wrapper.h HINTS
-    ${LLVM_PREFIX_DIR}/include/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}.${LLVM_VERSION_PATCH}/include
-    ${LLVM_PREFIX_DIR}/include/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}/include
-    ${LLVM_PREFIX_DIR}/include/clang/${LLVM_VERSION_MAJOR}/include
-    ${LLVM_PREFIX_DIR}/lib/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}.${LLVM_VERSION_PATCH}/include
-    ${LLVM_PREFIX_DIR}/lib/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}/include
-    ${LLVM_PREFIX_DIR}/lib/clang/${LLVM_VERSION_MAJOR}/include
-    ${LLVM_PREFIX_DIR}/lib64/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}.${LLVM_VERSION_PATCH}/include
-    ${LLVM_PREFIX_DIR}/lib64/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}/include
-    ${LLVM_PREFIX_DIR}/lib64/clang/${LLVM_VERSION_MAJOR}/include
-    DOC "Path to internal clang headers. Typically, $LLVM_INSTALL_PREFIX/include/clang/<llvm-version>/include")
+  # find_path(FOUND_CLANG_INCLUDE_PATH __clang_cuda_runtime_wrapper.h HINTS
+  #   ${LLVM_PREFIX_DIR}/include/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}.${LLVM_VERSION_PATCH}/include
+  #   ${LLVM_PREFIX_DIR}/include/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}/include
+  #   ${LLVM_PREFIX_DIR}/include/clang/${LLVM_VERSION_MAJOR}/include
+  #   ${LLVM_PREFIX_DIR}/lib/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}.${LLVM_VERSION_PATCH}/include
+  #   ${LLVM_PREFIX_DIR}/lib/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}/include
+  #   ${LLVM_PREFIX_DIR}/lib/clang/${LLVM_VERSION_MAJOR}/include
+  #   ${LLVM_PREFIX_DIR}/lib64/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}.${LLVM_VERSION_PATCH}/include
+  #   ${LLVM_PREFIX_DIR}/lib64/clang/${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}/include
+  #   ${LLVM_PREFIX_DIR}/lib64/clang/${LLVM_VERSION_MAJOR}/include
+  #   DOC "Path to internal clang headers. Typically, $LLVM_INSTALL_PREFIX/include/clang/<llvm-version>/include")
 
-  if(EXISTS ${FOUND_CLANG_INCLUDE_PATH})
-    # Required for newer ROCm versions
-    set(CLANG_INCLUDE_PATH ${FOUND_CLANG_INCLUDE_PATH}/..)
-  endif()
+  # if(EXISTS ${FOUND_CLANG_INCLUDE_PATH})
+  #   # Required for newer ROCm versions
+    # set(CLANG_INCLUDE_PATH ${FOUND_CLANG_INCLUDE_PATH}/..)
+  # endif()
+  message(WARNING "CLANG_INCLUDE_PATH ${CLANG_INCLUDE_PATH} does not exist. Please provide clang's internal include path manually: Find the directory where __clang_cuda_runtime_wrapper.h is. Provide this directory for older ROCm versions and the parent directory for newer ones.")
 
   if(NOT EXISTS ${CLANG_INCLUDE_PATH})
     message(SEND_ERROR "CLANG_INCLUDE_PATH ${CLANG_INCLUDE_PATH} does not exist. Please provide clang's internal include path manually: Find the directory where __clang_cuda_runtime_wrapper.h is. Provide this directory for older ROCm versions and the parent directory for newer ones.")
@@ -369,6 +370,9 @@ endif()
 #Use add_definitions for now for older cmake versions
 cmake_policy(SET CMP0005 NEW)
 add_definitions(-DHIPSYCL_DEBUG_LEVEL=${HIPSYCL_DEBUG_LEVEL})
+
+include_directories(${CLANG_INCLUDE_PATH})
+include_directories(/home/dvalapar/work/root/dev.adaptivecpp-proto/builddir//interpreter/llvm-project/llvm/tools/clang/include)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
