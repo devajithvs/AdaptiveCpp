@@ -31,6 +31,7 @@ runtime* runtime_keep_alive_token::get() const {
   return _rt.get();
 }
 
+__attribute__((visibility("default")))
 std::shared_ptr<runtime> application::get_runtime_pointer() {
   static std::mutex mutex;
   static std::weak_ptr<runtime> rt;
@@ -46,6 +47,7 @@ std::shared_ptr<runtime> application::get_runtime_pointer() {
   return rt_ptr;
 }
 
+__attribute__((visibility("default")))
 settings &application::get_settings() {
   static settings s;
   return s;

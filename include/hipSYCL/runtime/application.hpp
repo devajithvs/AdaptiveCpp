@@ -26,7 +26,7 @@ class runtime;
 class async_error_list;
 
 
-class application
+class __attribute__((visibility("default"))) application
 {
 public:
   static settings& get_settings();
@@ -50,7 +50,7 @@ private:
   std::shared_ptr<runtime> _rt;
 };
 
-class runtime_keep_alive_token {
+class __attribute__((visibility("default"))) runtime_keep_alive_token {
 public:
   runtime_keep_alive_token();
 

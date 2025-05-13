@@ -22,7 +22,7 @@ class handler;
 namespace detail {
 
 template<class Arg>
-class function_set
+class  __attribute__((visibility("default")))  function_set
 {
 public:
   using function_type = function_class<void (Arg)>;

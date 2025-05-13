@@ -21,7 +21,7 @@
 namespace hipsycl {
 namespace rt {
 
-class runtime
+class __attribute__((visibility("default"))) runtime
 {
 public:
 

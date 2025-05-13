@@ -123,7 +123,7 @@ private:
   error_type _etype;
 };
 
-class result {
+class __attribute__((visibility("default"))) result {
 public:
   // constructs success result
   result() = default;

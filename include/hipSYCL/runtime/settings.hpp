@@ -88,7 +88,7 @@ bool try_get_environment_variable(const std::string& name, T& out) {
   return false;
 }
 
-enum class setting {
+enum class __attribute__((visibility("default"))) setting {
   debug_level,
   scheduler_type,
   visibility_mask,

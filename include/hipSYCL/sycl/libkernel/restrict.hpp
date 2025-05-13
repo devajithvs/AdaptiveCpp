@@ -19,7 +19,7 @@ namespace sycl {
 namespace detail {
 
 template <class T>
-struct __acpp_sscp_emit_param_type_annotation_restrict {
+struct  __attribute__((visibility("default"))) __acpp_sscp_emit_param_type_annotation_restrict {
   T value;
 };
 

@@ -254,7 +254,7 @@ private:
   mutable std::mutex _mutex;
 };
 
-class kernel_cache {
+class __attribute__((visibility("default"))) kernel_cache {
 public:
   using code_object_id = kernel_configuration::id_type;
   using code_object_ptr = std::unique_ptr<const code_object>;

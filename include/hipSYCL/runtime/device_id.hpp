@@ -78,7 +78,7 @@ struct backend_descriptor
   }
 };
 
-class device_id
+class __attribute__((visibility("default"))) device_id
 {
 public:
   device_id() = default;

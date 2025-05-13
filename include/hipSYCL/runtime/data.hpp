@@ -271,7 +271,7 @@ struct data_allocation {
   backend_allocator* managing_allocator;
 };
 
-template <class Memory_descriptor> class allocation_list {
+template <class Memory_descriptor> class __attribute__((visibility("default"))) allocation_list {
 public:
   template<class BinaryPredicate>
   bool add_if_unique(BinaryPredicate&& comparator, data_allocation<Memory_descriptor> &&new_alloc) {

@@ -60,7 +60,7 @@ public:
   create_inorder_executor(device_id dev, int priority) = 0;
 };
 
-class backend_manager
+class __attribute__((visibility("default"))) backend_manager
 {
 public:
   using backend_list_type =

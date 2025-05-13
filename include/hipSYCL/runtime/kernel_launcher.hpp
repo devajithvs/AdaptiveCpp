@@ -61,7 +61,7 @@ private:
   sscp_code_object_invoker* _sscp_invoker = nullptr;
 };
 
-class backend_kernel_launcher
+class  __attribute__((visibility("default"))) backend_kernel_launcher
 {
 public:
   virtual ~backend_kernel_launcher(){}
