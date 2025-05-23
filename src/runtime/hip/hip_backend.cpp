@@ -16,19 +16,6 @@
 #include "hipSYCL/runtime/hip/hip_queue.hpp"
 #include "hipSYCL/runtime/multi_queue_executor.hpp"
 
-HIPSYCL_PLUGIN_API_EXPORT
-hipsycl::rt::backend *hipsycl_backend_plugin_create() {
-  return new hipsycl::rt::hip_backend();
-}
-
-static const char *backend_name = "hip";
-
-HIPSYCL_PLUGIN_API_EXPORT
-const char *hipsycl_backend_plugin_get_name() {
-  return backend_name;
-}
-
-
 namespace hipsycl {
 namespace rt {
 
