@@ -412,9 +412,10 @@ if(BUILD_CLANG_PLUGIN)
 
     if(CLANG_VENDOR STREQUAL "AMD")
       message(WARNING "Building AdaptiveCpp as part of AMD Clang, ROCm version not known, can't apply specific workarounds.")
-    elseif(${CMAKE_PROJECT_VERSION_MINOR} EQUAL 0)
-      message(WARNING "Building AdaptiveCpp with an unreleased LLVM version, expect incompatibilities.")
+    # elseif(${CMAKE_PROJECT_VERSION_MINOR} EQUAL 0)
+      # message(WARNING "Building AdaptiveCpp with an unreleased LLVM version, expect incompatibilities.")
     endif()
+      message(WARNING "Building AdaptiveCpp with an unreleased LLVM version, expect incompatibilities.")
   endif()
 
   if(${LLVM_VERSION_MAJOR} LESS 15)

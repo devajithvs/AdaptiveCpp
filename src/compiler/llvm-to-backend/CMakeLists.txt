@@ -24,7 +24,7 @@ function(create_llvm_based_library)
     add_library(${target} STATIC
       ${sources})
   else()
-    add_library(${target} SHARED
+    add_library(${target} STATIC
       ${sources})
   endif()
 
@@ -39,16 +39,16 @@ function(create_llvm_based_library)
 
   if(NOT ACPP_LLVM_COMPONENT)
     find_library(LLVM_LIBRARY NAMES LLVM LLVM-${LLVM_VERSION_MAJOR} HINTS ${LLVM_LIBRARY_DIRS} NO_DEFAULT_PATH)
-    if(NOT LLVM_LIBRARY)
-      message(FATAL_ERROR "LLVM at ${LLVM_DIR} does not have libLLVM.so. Disable advanced compiler-based functionality (-DACPP_COMPILER_FEATURE_PROFILE=minimal, not recommended for most use cases) or choose another LLVM installation")
-    endif()
-  elseif(NOT LLVM_BUILD_LLVM_DYLIB AND NOT WIN32)
-    message(FATAL_ERROR "LLVM is not configured to build libLLVM.so. Please disable reconfigure with LLVM_BUILD_LLVM_DYLIB and LLVM_LINK_LLVM_DYLIB.")
+    # if(NOT LLVM_LIBRARY)
+    #   message(FATAL_ERROR "LLVM at ${LLVM_DIR} does not have libLLVM.so. Disable advanced compiler-based functionality (-DACPP_COMPILER_FEATURE_PROFILE=minimal, not recommended for most use cases) or choose another LLVM installation")
+    # endif()
+  # elseif(NOT LLVM_BUILD_LLVM_DYLIB AND NOT WIN32)
+  #   message(FATAL_ERROR "LLVM is not configured to build libLLVM.so. Please disable reconfigure with LLVM_BUILD_LLVM_DYLIB and LLVM_LINK_LLVM_DYLIB.")
   endif()
   if(WIN32)
     llvm_config(${target} core support irreader passes)
   else()
-    llvm_config(${target} USE_SHARED core support irreader passes)
+    llvm_config(${target} core support irreader passes)
   endif()
   # We need symbolic functions for stdpar
   target_link_libraries(${target} PRIVATE ${HIPSYCL_STDPAR_RT_LINKER_FLAGS})
@@ -144,7 +144,7 @@ if(WITH_SSCP_COMPILER)
     set(MODE STATIC)
   endif()
   create_llvm_based_library(
-    ${MODE}
+    STATIC
     TARGET llvm-to-backend
     SOURCES 
       LLVMToBackend.cpp 
