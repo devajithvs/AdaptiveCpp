@@ -26,13 +26,6 @@ class backend;
 #define HIPSYCL_PLUGIN_API_EXPORT extern "C" __declspec(dllexport)
 #endif
 
-HIPSYCL_PLUGIN_API_EXPORT
-hipsycl::rt::backend *hipsycl_backend_plugin_create();
-
-HIPSYCL_PLUGIN_API_EXPORT
-const char* hipsycl_backend_plugin_get_name();
-
-
 namespace hipsycl {
 namespace rt {
 
