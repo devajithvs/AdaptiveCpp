@@ -21,11 +21,22 @@ std::string getClangPath() {
   else
     path = ACPP_CLANG_PATH;
   
+  auto backup_path = path;
   auto pos = path.find("$ACPP_PATH");
   while (pos != std::string::npos) {
     const auto install_dir = common::filesystem::get_install_directory();
     path.replace(pos, std::string_view("$ACPP_PATH").size(), install_dir);
     pos = path.find("$ACPP_PATH");
+  }
+
+  if (!common::filesystem::exists(path)) {
+    path = backup_path;
+    pos = path.find("$ACPP_PATH");
+    while (pos != std::string::npos) {
+      const auto clang_build_dir = common::filesystem::get_install_directory() + "/interpreter/llvm-project/llvm";
+      path.replace(pos, std::string_view("$ACPP_PATH").size(), clang_build_dir);
+      pos = path.find("$ACPP_PATH");
+    }
   }
   return path;
 }
