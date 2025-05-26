@@ -1,5 +1,5 @@
 
-add_library(acpp-common SHARED
+add_library(acpp-common STATIC
     filesystem.cpp
     appdb.cpp
     dylib_loader.cpp  
@@ -39,7 +39,7 @@ if(WIN32)
     set(HIPSYCL_RT_LIBRARY_OUTPUT_NAME "${HIPSYCL_COMMON_LIBRARY_OUTPUT_NAME}.dll" PARENT_SCOPE)
   endif()
 else()
-  target_link_libraries(acpp-common PRIVATE dl std::filesystem)
+  target_link_libraries(acpp-common PRIVATE dl)
 
   # ensure actual output and expected are equivalent
   set_target_properties(acpp-common PROPERTIES LIBRARY_OUTPUT_NAME ${HIPSYCL_COMMON_LIBRARY_OUTPUT_NAME})

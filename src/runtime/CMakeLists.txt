@@ -61,6 +61,24 @@ add_library(acpp-rt SHARED
   pcuda/pcuda_thread_state.cpp
   pcuda/pcuda_event.cpp)
 
+if(TARGET clang)
+  add_dependencies(acpp-rt clang)
+endif()
+
+set(LIBKERNEL_SSCP_TARGETS
+    host
+    spirv
+    ptx
+    amdgpu-amdhsa
+)
+
+foreach(target_suffix IN LISTS LIBKERNEL_SSCP_TARGETS)
+    set(target_name "libkernel-sscp-${target_suffix}")
+    if(TARGET ${target_name})
+        add_dependencies(acpp-rt ${target_name})
+    endif()
+endforeach()
+
 target_compile_options(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
 target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} Threads::Threads)
 target_link_libraries(acpp-rt PUBLIC acpp-common)
@@ -92,7 +110,7 @@ if(WIN32)
     set(HIPSYCL_RT_LIBRARY_OUTPUT_NAME "${HIPSYCL_RT_LIBRARY_OUTPUT_NAME}.dll" PARENT_SCOPE)
   endif()
 else()
-  target_link_libraries(acpp-rt PRIVATE dl std::filesystem)
+  target_link_libraries(acpp-rt PRIVATE dl)
 
   # ensure actual output and expected are equivalent
   set_target_properties(acpp-rt PROPERTIES LIBRARY_OUTPUT_NAME ${HIPSYCL_RT_LIBRARY_OUTPUT_NAME})
@@ -112,7 +130,6 @@ install(TARGETS acpp-rt
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
-set_property(GLOBAL APPEND PROPERTY CLING_EXPORTS ${ACPP_EXPORTS})
 
 set(CMAKE_INSTALL_RPATH ${base}/../ ${base}/llvm-to-backend)
 
