@@ -6,6 +6,12 @@ add_library(acpp-common STATIC
     settings.cpp
   )
 
+set_target_properties(acpp-common PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/bin"
+)
+
 target_include_directories(acpp-common
   PUBLIC
     $<BUILD_INTERFACE:${HIPSYCL_SOURCE_DIR}/include>

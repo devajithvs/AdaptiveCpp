@@ -99,7 +99,7 @@ endif()
 
 set(HIPSYCL_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(ACPP_SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
-set(ACPP_BINARY_ROOT "${CMAKE_CURRENT_BINARY_DIR}")
+set(ACPP_BINARY_ROOT "${CMAKE_BINARY_DIR}")
 
 if(NOT CMAKE_BUILD_TYPE AND NOT ACPP_LLVM_COMPONENT)
   set(CMAKE_BUILD_TYPE Release)
@@ -834,7 +834,30 @@ configure_file(
   ${ACPP_SOURCE_ROOT}/include/hipSYCL/pcuda/detail/prefixed_runtime.hpp.in
   ${ACPP_BINARY_ROOT}/include/hipSYCL/pcuda/detail/hip_prefixed_runtime.hpp)
 
+# Create an intermediate location to store headers so that cling can run SYCL without installing
+# Without this, we can only use the headers when installed
+set(ADAPTIVE_CPP_HEADER_BUILD_PATH "${ACPP_BINARY_ROOT}/include/AdaptiveCpp")
+file(MAKE_DIRECTORY ${ADAPTIVE_CPP_HEADER_BUILD_PATH})
+file(COPY ${ACPP_SOURCE_ROOT}/include/CL DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/ FILES_MATCHING PATTERN "*.hpp")
+file(COPY ${ACPP_SOURCE_ROOT}/include/SYCL DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/ FILES_MATCHING PATTERN "*.hpp")
 
+file(COPY ${ACPP_SOURCE_ROOT}/include/hipSYCL DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/ FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
+file(COPY ${ACPP_SOURCE_ROOT}/include/hipSYCL/std DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/hipSYCL/)
+
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/common/config.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/hipSYCL/common/)
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/pcuda/detail/cuda_prefixed_runtime.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/hipSYCL/pcuda/detail/)
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/pcuda/detail/hip_prefixed_runtime.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/hipSYCL/pcuda/detail/)
+
+# “Second part” – replicate the same pattern
+file(COPY ${ACPP_SOURCE_ROOT}/include/hipSYCL/ DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
+file(COPY ${ACPP_SOURCE_ROOT}/include/hipSYCL/std/ DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/std/)
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/common/config.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/hipSYCL/common/)
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/pcuda/detail/cuda_prefixed_runtime.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/hipSYCL/pcuda/detail/)
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/pcuda/detail/hip_prefixed_runtime.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/hipSYCL/pcuda/detail/)
+
+if(NOT WIN32)
+  file(COPY ${ACPP_SOURCE_ROOT}/include/SYCL/sycl.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/sycl/)
+endif()
 
 install(DIRECTORY include/CL DESTINATION include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp")
 install(DIRECTORY include/SYCL DESTINATION include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp")
@@ -866,6 +889,19 @@ install(PROGRAMS bin/acpp DESTINATION bin)
 install(PROGRAMS bin/acpp DESTINATION bin RENAME syclcc)
 install(PROGRAMS bin/acpp DESTINATION bin RENAME syclcc-clang)
 
+file(COPY bin/acpp DESTINATION ${ACPP_BINARY_ROOT}/bin)
+file(RENAME ${ACPP_BINARY_ROOT}/bin/acpp ${ACPP_BINARY_ROOT}/bin/syclcc)
+file(COPY bin/acpp DESTINATION ${ACPP_BINARY_ROOT}/bin)
+file(RENAME ${ACPP_BINARY_ROOT}/bin/acpp ${ACPP_BINARY_ROOT}/bin/syclcc-clang)
+file(COPY bin/acpp DESTINATION ${ACPP_BINARY_ROOT}/bin)
+
+file(COPY ${ACPP_BINARY_ROOT}/acpp-core.json DESTINATION ${ACPP_BINARY_ROOT}/etc/AdaptiveCpp/)
+if(WITH_CUDA_BACKEND)
+  file(COPY ${ACPP_BINARY_ROOT}/acpp-cuda.json DESTINATION ${ACPP_BINARY_ROOT}/etc/AdaptiveCpp/)
+endif()
+if(WITH_ROCM_BACKEND)
+  file(COPY ${ACPP_BINARY_ROOT}/acpp-rocm.json DESTINATION ${ACPP_BINARY_ROOT}/etc/AdaptiveCpp/)
+endif()
 
 install(FILES ${ACPP_BINARY_ROOT}/acpp-core.json DESTINATION ${ACPP_CONFIG_FILE_INSTALL_DIR})
 if(WITH_CUDA_BACKEND)
