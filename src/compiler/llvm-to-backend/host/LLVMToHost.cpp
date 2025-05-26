@@ -169,7 +169,7 @@ bool LLVMToHostTranslator::translateToBackendFormat(llvm::Module &FlavoredModule
     if(InputStream.error()) {HIPSYCL_DEBUG_ERROR << "Error while flushing" << InputStream.error().message() << '\n'; }
   }
 
-  const std::string ClangPath = getClangPath();
+  const std::string ClangPath = CLANG_EXECUTABLE_PATH;
   const std::string CpuFlag = ACPP_HOST_CPU_FLAG;
   
   llvm::SmallVector<llvm::StringRef, 16> Invocation{ClangPath,

@@ -275,6 +275,7 @@ if(WITH_SSCP_COMPILER)
       TOOL host/LLVMToHostTool.cpp)
 
     target_compile_definitions(llvm-to-host PRIVATE
+    -DCLANG_EXECUTABLE_PATH="${CLANG_EXECUTABLE_PATH}"
     -DACPP_HOST_CPU_FLAG="${HOST_CPU_FLAG}"
     -DACPP_ADDITIONAL_CPU_FLAGS="${HOST_ADDITIONAL_FLAGS}")
     target_link_libraries(llvm-to-host PRIVATE acpp-clang-cbs)

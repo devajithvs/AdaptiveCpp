@@ -61,6 +61,18 @@ add_library(acpp-rt SHARED
   pcuda/pcuda_thread_state.cpp
   pcuda/pcuda_event.cpp)
 
+if(TARGET clang)
+  add_dependencies(acpp-rt clang)
+else()
+  message(WARNING "Target 'clang' not found. Make sure LLVM/Clang is added and built.")
+endif()
+
+if(TARGET libkernel-sscp-host)
+  add_dependencies(acpp-rt libkernel-sscp-host)
+else()
+  message(WARNING "Target 'libkernel-sscp-host' not found. Make sure libkernel-sscp-host is added and built.")
+endif()
+
 target_compile_options(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
 target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} Threads::Threads)
 target_link_libraries(acpp-rt PUBLIC acpp-common)
@@ -92,7 +104,7 @@ if(WIN32)
     set(HIPSYCL_RT_LIBRARY_OUTPUT_NAME "${HIPSYCL_RT_LIBRARY_OUTPUT_NAME}.dll" PARENT_SCOPE)
   endif()
 else()
-  target_link_libraries(acpp-rt PRIVATE dl std::filesystem)
+  target_link_libraries(acpp-rt PRIVATE dl)
 
   # ensure actual output and expected are equivalent
   set_target_properties(acpp-rt PROPERTIES LIBRARY_OUTPUT_NAME ${HIPSYCL_RT_LIBRARY_OUTPUT_NAME})
@@ -112,7 +124,6 @@ install(TARGETS acpp-rt
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
-set_property(GLOBAL APPEND PROPERTY CLING_EXPORTS ${ACPP_EXPORTS})
 
 set(CMAKE_INSTALL_RPATH ${base}/../ ${base}/llvm-to-backend)
 

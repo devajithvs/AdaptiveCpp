@@ -422,12 +422,12 @@ if(BUILD_CLANG_PLUGIN)
       "${LLVM_MAIN_SRC_DIR}/../cmake/Modules"
       )
 
-    set(CLANG_INSTALLED_PATH "$ACPP_PATH/bin/clang++")
+    set(CLANG_INSTALLED_PATH ${CLANG_EXECUTABLE_PATH})
     set(CLANG_EXECUTABLE_PATH $<TARGET_FILE:clang>)
 
     include(GetClangResourceDir)
     get_clang_resource_dir(CLANG_INCLUDE_PATH SUBDIR include)
-    set(CLANG_INCLUDE_PATH "$ACPP_PATH/${CLANG_INCLUDE_PATH}")
+    set(CLANG_INCLUDE_PATH "$ACPP_PATH/../../${CLANG_INCLUDE_PATH}")
 
     if(CLANG_VENDOR STREQUAL "AMD")
       message(WARNING "Building AdaptiveCpp as part of AMD Clang, ROCm version not known, can't apply specific workarounds.")
@@ -760,7 +760,30 @@ configure_file(
   ${ACPP_SOURCE_ROOT}/include/hipSYCL/pcuda/detail/prefixed_runtime.hpp.in
   ${ACPP_BINARY_ROOT}/include/hipSYCL/pcuda/detail/hip_prefixed_runtime.hpp)
 
+# Create an intermediate location to store headers so that cling can run SYCL without installing
+# Without this, we can only use the headers when installed
+set(ADAPTIVE_CPP_HEADER_BUILD_PATH "${ACPP_BINARY_ROOT}/include/AdaptiveCpp")
+file(MAKE_DIRECTORY ${ADAPTIVE_CPP_HEADER_BUILD_PATH})
+file(COPY ${ACPP_SOURCE_ROOT}/include/CL DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/ FILES_MATCHING PATTERN "*.hpp")
+file(COPY ${ACPP_SOURCE_ROOT}/include/SYCL DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/ FILES_MATCHING PATTERN "*.hpp")
 
+file(COPY ${ACPP_SOURCE_ROOT}/include/hipSYCL DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/ FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
+file(COPY ${ACPP_SOURCE_ROOT}/include/hipSYCL/std DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/hipSYCL/)
+
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/common/config.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/hipSYCL/common/)
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/pcuda/detail/cuda_prefixed_runtime.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/hipSYCL/pcuda/detail/)
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/pcuda/detail/hip_prefixed_runtime.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/hipSYCL/pcuda/detail/)
+
+# “Second part” – replicate the same pattern
+file(COPY ${ACPP_SOURCE_ROOT}/include/hipSYCL/ DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h")
+file(COPY ${ACPP_SOURCE_ROOT}/include/hipSYCL/std/ DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/std/)
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/common/config.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/hipSYCL/common/)
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/pcuda/detail/cuda_prefixed_runtime.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/hipSYCL/pcuda/detail/)
+file(COPY ${ACPP_BINARY_ROOT}/include/hipSYCL/pcuda/detail/hip_prefixed_runtime.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/AdaptiveCpp/hipSYCL/pcuda/detail/)
+
+if(NOT WIN32)
+  file(COPY ${ACPP_SOURCE_ROOT}/include/SYCL/sycl.hpp DESTINATION ${ADAPTIVE_CPP_HEADER_BUILD_PATH}/sycl/)
+endif()
 
 install(DIRECTORY include/CL DESTINATION include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp")
 install(DIRECTORY include/SYCL DESTINATION include/AdaptiveCpp/ FILES_MATCHING PATTERN "*.hpp")
@@ -792,6 +815,8 @@ install(PROGRAMS bin/acpp DESTINATION bin)
 install(PROGRAMS bin/acpp DESTINATION bin RENAME syclcc)
 install(PROGRAMS bin/acpp DESTINATION bin RENAME syclcc-clang)
 
+file(COPY bin/acpp DESTINATION ${ACPP_BINARY_ROOT}/bin)
+file(COPY ${ACPP_BINARY_ROOT}/acpp-core.json DESTINATION ${ACPP_BINARY_ROOT}/etc/AdaptiveCpp/)
 
 install(FILES ${ACPP_BINARY_ROOT}/acpp-core.json DESTINATION ${ACPP_CONFIG_FILE_INSTALL_DIR})
 if(WITH_CUDA_BACKEND)
@@ -911,9 +936,9 @@ set(ADAPTIVECPP_INSTALL_CMAKE_DIR
 # Set relative paths for install root in the following variables so that
 # configure_package_config_file will generate paths relative whatever is
 # the future install root
-set(ADAPTIVECPP_INSTALL_COMPILER_DIR bin)
-set(ADAPTIVECPP_INSTALL_LAUNCHER_DIR ${ADAPTIVECPP_INSTALL_CMAKE_DIR})
-set(ADAPTIVECPP_INSTALL_LAUNCHER_RULE_DIR ${ADAPTIVECPP_INSTALL_CMAKE_DIR})
+set(ADAPTIVECPP_INSTALL_COMPILER_DIR "${ACPP_BINARY_ROOT}/bin")
+set(ADAPTIVECPP_INSTALL_LAUNCHER_DIR "${ACPP_SOURCE_ROOT}/cmake")
+set(ADAPTIVECPP_INSTALL_LAUNCHER_RULE_DIR "${ACPP_SOURCE_ROOT}/cmake")
 
 install(PROGRAMS cmake/syclcc-launcher DESTINATION ${ADAPTIVECPP_INSTALL_CMAKE_DIR})
 install(PROGRAMS cmake/syclcc-launch.rule.in DESTINATION ${ADAPTIVECPP_INSTALL_CMAKE_DIR})
@@ -934,6 +959,8 @@ configure_package_config_file(
     ADAPTIVECPP_INSTALL_LAUNCHER_RULE_DIR
 )
 
+file(COPY ${ACPP_BINARY_ROOT}/adaptivecpp-config.cmake ${ACPP_BINARY_ROOT}/adaptivecpp-config-version.cmake DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
 install(FILES
   ${ACPP_BINARY_ROOT}/adaptivecpp-config.cmake
   ${ACPP_BINARY_ROOT}/adaptivecpp-config-version.cmake
@@ -944,6 +971,11 @@ install(EXPORT install_exports
   FILE "adaptivecpp-targets.cmake"
   NAMESPACE AdaptiveCpp::
   DESTINATION ${ADAPTIVECPP_INSTALL_CMAKE_DIR}
+)
+
+export(EXPORT install_exports
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/adaptivecpp-targets.cmake"
+  NAMESPACE AdaptiveCpp::
 )
 
 mark_as_advanced(

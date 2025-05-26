@@ -6,7 +6,7 @@ set(ACPP_COMPILER_LAUNCH_RULE_IN_FILE "@PACKAGE_ADAPTIVECPP_INSTALL_LAUNCHER_RUL
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
-include(adaptivecpp-targets)
+# include(adaptivecpp-targets)
 
 set(ACPP_EXTRA_ARGS "${ACPP_EXTRA_ARGS}" CACHE STRING "Arguments to pass through directly to acpp.")
 set(ACPP_EXTRA_COMPILE_OPTIONS "${ACPP_EXTRA_COMPILE_OPTIONS}" CACHE STRING "Additional compile options for source files listed in add_sycl_to_target.")
@@ -78,9 +78,9 @@ endif()
 # This is done to keep COMPILE_FLAGS free from Clang-incompatible command line arguments, allowing it to be reused
 # by clang(d)-based tooling and IDEs.
 if(WIN32)
-  set(ACPP_COMPILER_LAUNCH_RULE "python ${ACPP_COMPILER_LAUNCHER} --launcher-cxx-compiler=${CMAKE_CXX_COMPILER} --launcher-syclcc=\"python*${ACPP_COMPILER}\" ${ACPP_EXTRA_ARGS}")
+  set(ACPP_COMPILER_LAUNCH_RULE "python ${ACPP_COMPILER_LAUNCHER} --launcher-cxx-compiler=${CLANG_EXECUTABLE_PATH} --launcher-syclcc=\"python*${ACPP_COMPILER}\" ${ACPP_EXTRA_ARGS}")
 else()
-  set(ACPP_COMPILER_LAUNCH_RULE "${ACPP_COMPILER_LAUNCHER} --launcher-cxx-compiler=${CMAKE_CXX_COMPILER} --launcher-syclcc=${ACPP_COMPILER} ${ACPP_EXTRA_ARGS}")
+  set(ACPP_COMPILER_LAUNCH_RULE "${ACPP_COMPILER_LAUNCHER} --launcher-cxx-compiler=${CLANG_EXECUTABLE_PATH} --launcher-syclcc=${ACPP_COMPILER} ${ACPP_EXTRA_ARGS}")
 endif()
 
 # All SYCL targets must be rebuilt when syclcc arguments change, e.g. by changing the target platform. Since the
@@ -132,5 +132,5 @@ function(add_sycl_to_target)
   set_target_properties("${ADD_SYCL_TARGET}" PROPERTIES RULE_LAUNCH_COMPILE "${EXISTING_LAUNCH_COMPILE_RULE} ${ACPP_COMPILER_LAUNCH_RULE}")
   set_target_properties("${ADD_SYCL_TARGET}" PROPERTIES RULE_LAUNCH_LINK "${EXISTING_LAUNCH_LINK_RULE} ${ACPP_COMPILER_LAUNCH_RULE}")
 
-  target_link_libraries(${ADD_SYCL_TARGET} PRIVATE AdaptiveCpp::acpp-rt)
+  target_link_libraries(${ADD_SYCL_TARGET} PRIVATE acpp-rt)
 endfunction()
