@@ -10,6 +10,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 
 #include "hipSYCL/compiler/llvm-to-backend/Utils.hpp"
+#include "hipSYCL/common/config.hpp"
 
 namespace hipsycl {
 namespace compiler {
@@ -39,6 +40,18 @@ std::string getClangPath() {
     }
   }
   return path;
+}
+
+std::string getBuiltinBitcodeFile(std::string BuiltinBitcodeFileName) {
+  std::string BuiltinBitcodeFile = common::filesystem::join_path(common::filesystem::get_install_directory(),
+  {"lib", "hipSYCL", "bitcode", BuiltinBitcodeFileName});
+
+  if (!common::filesystem::exists(BuiltinBitcodeFile))
+    BuiltinBitcodeFile =
+    common::filesystem::join_path(ADAPTIVE_CPP_BINARY_DIR,
+      {"lib", "hipSYCL", "bitcode", BuiltinBitcodeFileName});
+
+  return BuiltinBitcodeFile;
 }
 
 } // namespace compiler

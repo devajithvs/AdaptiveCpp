@@ -346,6 +346,8 @@ private:
 
 std::string getClangPath();
 
+std::string getBuiltinBitcodeFile(std::string BuiltinBitcodeFileName);
+
 }
 }
 
