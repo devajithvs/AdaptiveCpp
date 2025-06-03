@@ -201,9 +201,7 @@ bool LLVMToPtxTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
 
   replaceBrokenLLVMIntrinsics(M);
 
-  std::string BuiltinBitcodeFile = 
-    common::filesystem::join_path(common::filesystem::get_install_directory(),
-      {"lib", "hipSYCL", "bitcode", "libkernel-sscp-ptx-full.bc"});
+  std::string BuiltinBitcodeFile = getBuiltinBitcodeFile("libkernel-sscp-ptx-full.bc");
   
   std::string LibdeviceFile;
   if(!LibdevicePath::get(LibdeviceFile)) {

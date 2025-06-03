@@ -30,5 +30,10 @@ std::string getClangPath() {
   return path;
 }
 
+std::string getBuiltinBitcodeFile(std::string BuiltinBitcodeFileName) {
+  return common::filesystem::join_path(common::filesystem::get_install_directory(),
+  {"lib", "hipSYCL", "bitcode", BuiltinBitcodeFileName});
+}
+
 } // namespace compiler
 } // namespace hipsycl

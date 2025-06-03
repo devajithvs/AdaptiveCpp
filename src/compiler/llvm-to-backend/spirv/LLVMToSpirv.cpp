@@ -222,9 +222,7 @@ bool LLVMToSpirvTranslator::toBackendFlavor(llvm::Module &M, PassHandler& PH) {
     }
   }
 
-  std::string BuiltinBitcodeFile = 
-    common::filesystem::join_path(common::filesystem::get_install_directory(),
-      {"lib", "hipSYCL", "bitcode", "libkernel-sscp-spirv-full.bc"});
+  std::string BuiltinBitcodeFile = getBuiltinBitcodeFile("libkernel-sscp-spirv-full.bc");
 
   if (!this->linkBitcodeFile(M, BuiltinBitcodeFile, M.getTargetTriple(), M.getDataLayoutStr()))
     return false;
