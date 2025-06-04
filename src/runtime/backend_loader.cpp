@@ -108,6 +108,8 @@ void backend_loader::query_backends() {
 
 }
 
+backend_loader::~backend_loader() { }
+
 std::size_t backend_loader::get_num_backends() const { return _handles.size(); }
 
 std::string backend_loader::get_backend_name(std::size_t index) const {
