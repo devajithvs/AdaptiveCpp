@@ -61,6 +61,12 @@ add_library(acpp-rt SHARED
   pcuda/pcuda_thread_state.cpp
   pcuda/pcuda_event.cpp)
 
+set_target_properties(acpp-rt PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/bin"
+)
+
 if(TARGET clang)
   add_dependencies(acpp-rt clang)
 endif()
