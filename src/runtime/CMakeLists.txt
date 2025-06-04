@@ -61,6 +61,12 @@ add_library(acpp-rt SHARED
   pcuda/pcuda_thread_state.cpp
   pcuda/pcuda_event.cpp)
 
+set_target_properties(acpp-rt PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/bin"
+)
+
 if(TARGET clang)
   add_dependencies(acpp-rt clang)
 else()
@@ -72,12 +78,6 @@ if(TARGET libkernel-sscp-host)
 else()
   message(WARNING "Target 'libkernel-sscp-host' not found. Make sure libkernel-sscp-host is added and built.")
 endif()
-
-set_target_properties(acpp-rt PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/lib"
-    LIBRARY_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/lib"
-    RUNTIME_OUTPUT_DIRECTORY "${ADAPTIVE_CPP_BINARY_DIR}/lib"
-)
 
 target_compile_options(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_CXX_FLAGS})
 target_link_libraries(acpp-rt PRIVATE ${HIPSYCL_RT_EXTRA_LINKER_FLAGS} Threads::Threads)
