@@ -108,11 +108,7 @@ void backend_loader::query_backends() {
 
 }
 
-backend_loader::~backend_loader() {
-  for (auto &handle : _handles) {
-    assert(handle.second);
-  }
-}
+backend_loader::~backend_loader() { }
 
 std::size_t backend_loader::get_num_backends() const { return _handles.size(); }
 
