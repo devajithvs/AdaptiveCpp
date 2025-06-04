@@ -37,7 +37,7 @@ std::string getBuiltinBitcodeFile(std::string BuiltinBitcodeFileName) {
 
   if (!common::filesystem::exists(BuiltinBitcodeFile))
     BuiltinBitcodeFile =
-    common::filesystem::join_path(LLVM_BINARY_DIR,
+    common::filesystem::join_path(ADAPTIVE_CPP_BINARY_DIR,
       {"lib", "hipSYCL", "bitcode", "libkernel-sscp-amdgpu-amdhsa-full.bc"});
 
   return BuiltinBitcodeFile;
